@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberForge | Academy Training Room</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        /* Split Screen Styling for Active Lessons */
+        .academy-workspace { display: flex; width: 100%; height: calc(100vh - 70px); }
+        .lesson-text-pane { width: 50%; background: #0f172a; border-right: 1px solid #1e293b; display: flex; flex-direction: column; }
+        .lesson-interactive-pane { width: 50%; background: #020617; display: flex; flex-direction: column; padding: 30px; overflow-y: auto; }
+        
+        .lesson-scroll { padding: 30px; overflow-y: auto; flex: 1; }
+        .lesson-scroll h3 { font-size: 22px; color: #fff; margin-bottom: 15px; }
+        .lesson-scroll p { font-size: 14px; color: #94a3b8; line-height: 1.6; margin-bottom: 15px; }
+        .lesson-scroll ul { margin-left: 20px; margin-bottom: 15px; color: #94a3b8; font-size: 14px; }
+        .lesson-scroll li { margin-bottom: 8px; line-height: 1.5; }
+        
+        /* Highlight boxes */
+        .info-block { background: #1e293b; border-left: 4px solid #10b981; padding: 15px; border-radius: 4px; margin: 20px 0; font-size: 14px; color: #cbd5e1; }
+        
+        /* Scenario Email Block */
+        .email-simulator { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 20px; font-family: 'Inter', sans-serif; color: #cbd5e1; margin-top: 20px; }
+        .email-header { border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 15px; font-size: 13px; }
+        .email-header div { margin-bottom: 5px; }
+        .email-body { font-size: 14px; line-height: 1.5; color: #f1f5f9; }
+        .phish-link { color: #38bdf8; text-decoration: underline; cursor: pointer; }
+
+        /* Quiz Validation inputs */
+        .academy-quiz-zone { margin-top: 25px; background: #0f172a; border: 1px solid #1e293b; padding: 20px; border-radius: 8px; }
+        .quiz-input-group { display: flex; gap: 10px; margin-top: 10px; }
+        .input-style { flex: 1; padding: 12px; background: #020617; border: 1px solid #334155; border-radius: 6px; color: #fff; outline: none; }
+        .input-style:focus { border-color: #10b981; }
+        .submit-btn { padding: 12px 20px; background: #10b981; color: #020617; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; }
+        
+        .success-badge { display: none; margin-top: 15px; padding: 12px; background: #10b981; color: #fff; text-align: center; border-radius: 6px; font-weight: bold; }
+        
+        /* Interactive Terminals Styling */
+        .terminal-box { background: #050814; border: 1px solid #38bdf8; border-radius: 6px; padding: 15px; font-family: 'Courier New', Courier, monospace; color: #38bdf8; font-size: 13px; line-height: 1.5; margin-top: 15px; min-height: 200px; }
+        .sniff-log { border-bottom: 1px dashed #1e293b; padding: 6px 0; font-size: 12px; }
+
+        /* Interactive SQLi CLI Terminal Styles */
+        .sqli-cli { background: #040712; border: 1px solid #10b981; border-radius: 8px; padding: 20px; font-family: 'Courier New', monospace; box-shadow: 0 4px 20px rgba(0, 255, 150, 0.15); }
+        .cli-header { border-bottom: 1px solid #112240; padding-bottom: 8px; margin-bottom: 15px; font-size: 12px; color: #10b981; display: flex; justify-content: space-between; }
+        .cli-line { margin-bottom: 8px; color: #a8e6cf; font-size: 13px; }
+        .cli-input-row { display: flex; align-items: center; gap: 8px; background: #0b1120; padding: 8px; border-radius: 4px; border: 1px solid #1e293b; margin-top: 10px; }
+        .cli-prompt { color: #10b981; font-weight: bold; font-size: 14px; white-space: nowrap; }
+        .cli-field { flex: 1; background: transparent; border: none; color: #fff; font-family: 'Courier New', monospace; font-size: 14px; outline: none; }
+
+        /* XSS Specific Sandbox App Styles */
+        .xss-browser { background: #ffffff; color: #1e293b; border-radius: 8px; border: 1px solid #cbd5e1; font-family: 'Inter', sans-serif; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .browser-topbar { background: #f1f5f9; padding: 10px 15px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #e2e8f0; }
+        .browser-dots { display: flex; gap: 6px; }
+        .browser-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .browser-address { flex: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 4px; padding: 4px 12px; font-size: 12px; font-family: monospace; color: #64748b; }
+        .browser-content { padding: 20px; background: #fafafa; min-height: 180px; }
+        .search-box-row { display: flex; gap: 8px; margin-bottom: 15px; }
+        .search-input { flex: 1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; background: #fff; color: #334; }
+        .search-btn-ui { background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .output-container-ui { padding: 12px; background: #e2e8f0; border-radius: 6px; border-left: 4px solid #3b82f6; font-size: 14px; min-height: 45px; }
+        .xss-console { background: #0f172a; color: #e2e8f0; border-radius: 6px; padding: 10px 15px; margin-top: 15px; font-family: monospace; font-size: 12px; border: 1px solid #334155; }
+
+        /* Windows/Linux Enumeration Panel Elements */
+        .win-explorer { background: #111827; border: 1px solid #4b5563; border-radius: 8px; padding: 0; overflow: hidden; display: flex; flex-direction: column; min-height: 250px; }
+        .win-nav-bar { background: #1f2937; border-bottom: 1px solid #374151; padding: 8px 15px; display: flex; gap: 10px; align-items: center; color: #9ca3af; font-family: monospace; font-size: 13px; }
+        .win-grid-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; padding: 20px; background: #030712; flex: 1; }
+        .win-icon-btn { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 10px; border-radius: 6px; cursor: pointer; transition: background 0.2s; border: 1px solid transparent; text-align: center; }
+        .win-icon-btn:hover { background: #1f2937; border-color: #4b5563; }
+        .win-icon-btn i { font-size: 28px; }
+        .win-icon-btn span { font-size: 12px; color: #e5e7eb; font-family: 'Inter', sans-serif; word-break: break-word; }
+    </style>
+</head>
+<body>
+
+<!-- ================= SIDEBAR ================= -->
+<div class="sidebar">
+    <div>
+        <div class="logo">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>CyberForge</span>
+        </div>
+        <ul class="menu">
+            <li><a href="/dashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+            <li><a href="/hacker"><i class="fa-solid fa-terminal"></i> Hacker Interface</a></li>
+            <li><a href="/victim"><i class="fa-solid fa-desktop"></i> Victim Interface</a></li>
+            <li><a href="/labs"><i class="fa-solid fa-flask"></i> Threat Lab Center</a></li>
+            <li><a href="/packet_sniffer"><i class="fa-solid fa-network-wired"></i> Packet Sniffer</a></li>
+            <li><a href="/password_analyzer"><i class="fa-solid fa-key"></i> Password Analyzer</a></li>
+            <li><a href="/ai_copilot"><i class="fa-solid fa-robot"></i> AI Cyber Copilot</a></li>
+            <li class="active"><a href="/academy"><i class="fa-solid fa-graduation-cap"></i> Cyber Defense Academy</a></li>
+            <li><a href="/report"><i class="fa-solid fa-file-pdf"></i> Generate Report</a></li>
+            <li><a href="/awareness"><i class="fa-solid fa-graduation-cap"></i> Cyber Safety Awareness</a></li>
+            <li><a href="/scenario_engine"><i class="fa-solid fa-gamepad"></i> Scenario Engine</a></li>
+            <li><a href="/gamification"><i class="fa-solid fa-trophy"></i> Gamification</a></li>
+            <li><a href="/siem_center"><i class="fa-solid fa-server"></i> SIEM Center</a></li>
+            <li><a href="/ai_mentor"><i class="fa-solid fa-graduation-cap"></i> AI Mentor Mode</a></li>
+            <li><a href="/report_center"><i class="fa-solid fa-folder-open"></i> Report Center</a></li>
+            <li><a href="/logout"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+        </ul>
+    </div>
+    <div class="sidebar-footer">
+        <h4>Infrastructure</h4>
+        <p>🟢 Kali Linux</p>
+        <p>🟢 Metasploitable</p>
+        <p>🟢 Flask Server</p>
+        <p>🟢 SQLite Database</p>
+    </div>
+</div>
+
+<!-- ================= MAIN WINDOW CONTAINER ================= -->
+<div class="main" style="padding: 0;">
+
+    <!-- TOP NAV HEADER BAR -->
+    <div class="topbar" style="padding: 15px 30px; background: #0f172a; border-bottom: 1px solid #1e293b;">
+        <div>
+            <h2 id="academy-view-title" style="font-size: 20px;">Cyber Defense Academy Workspace</h2>
+            <p id="academy-view-desc" style="font-size: 13px;">Operator: {{ username }}</p>
+        </div>
+        <button id="exit-lesson-btn" onclick="exitToLessonMenu()" style="display:none; background:#334155; color:#fff; border:none; padding:8px 16px; border-radius:4px; font-weight:600; cursor:pointer;">
+            <i class="fa-solid fa-arrow-left"></i> Back to Lessons
+        </button>
+    </div>
+
+    <!-- VIEW 1: MAIN LESSON SELECTION SEED GRID -->
+    <div class="dashboard-grid" id="lesson-menu-grid" style="padding: 30px; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+        {% for lesson in lessons %}
+        <div class="panel" style="padding: 25px; display: flex; flex-direction: column; justify-content: space-between; min-height: 180px;">
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span class="difficulty {% if lesson.difficulty == 'Easy' %}easy{% elif lesson.difficulty == 'Medium' %}medium{% else %}hard{% endif %}" style="padding: 4px 8px; font-size: 11px; font-weight: bold; border-radius: 4px; text-transform: uppercase;">
+                        {{ lesson.difficulty }}
+                    </span>
+                    <i class="fa-solid fa-graduation-cap" style="color: #64748b;"></i>
+                </div>
+                <h3 style="color: #fff; font-size: 17px; font-weight: 600; margin-bottom: 8px;">{{ lesson.title }}</h3>
+                <p style="color: #94a3b8; font-size: 13px; line-height: 1.4;">Master the fundamental concepts of {{ lesson.title }} attacks and mitigations.</p>
+            </div>
+            
+            {% if lesson.title == "Social Engineering" %}
+            <button class="launch-btn" onclick="startSocialEngineeringLesson()" style="width: 100%; margin-top: 15px; background: #10b981; color: #020617; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer;">
+                Start Lesson
+            </button>
+            {% elif lesson.title == "Password Attacks" %}
+            <button class="launch-btn" onclick="startPasswordAttacksLesson()" style="width: 100%; margin-top: 15px; background: #10b981; color: #020617; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer;">
+                Start Lesson
+            </button>
+            {% elif lesson.title == "Packet Sniffing" %}
+            <button class="launch-btn" onclick="startPacketSniffingLesson()" style="width: 100%; margin-top: 15px; background: #10b981; color: #020617; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer;">
+                Start Lesson
+            </button>
+            {% elif lesson.title == "SQL Injection" %}
+            <button class="launch-btn" onclick="startSQLInjectionLesson()" style="width: 100%; margin-top: 15px; background: #10b981; color: #020617; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer;">
+                Start Lesson
+            </button>
+            {% elif lesson.title == "XSS" %}
+            <button class="launch-btn" onclick="startXSSLesson()" style="width: 100%; margin-top: 15px; background: #10b981; color: #020617; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer;">
+                Start Lesson
+            </button>
+            {% elif lesson.title == "Local File Inclusion (LFI)" %}
+            <button class="launch-btn" onclick="startLFILesson()" style="width: 100%; margin-top: 15px; background: #10b981; color: #020617; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer;">
+                Start Lesson
+            </button>
+            {% elif lesson.title == "Privilege Escalation" %}
+            <button class="launch-btn" onclick="startPrivEscLesson()" style="width: 100%; margin-top: 15px; background: #10b981; color: #020617; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer;">
+                Start Lesson
+            </button>
+            {% elif lesson.title == "Windows Enumeration" %}
+            <button class="launch-btn" onclick="startWinEnumLesson()" style="width: 100%; margin-top: 15px; background: #10b981; color: #020617; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer;">
+                Start Lesson
+            </button>
+            {% elif lesson.title == "Linux Enumeration" %}
+            <button class="launch-btn" onclick="startLinuxEnumLesson()" style="width: 100%; margin-top: 15px; background: #10b981; color: #020617; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer;">
+                Start Lesson
+            </button>
+            {% else %}
+            <button class="launch-btn" disabled style="width: 100%; margin-top: 15px; background: #1e293b; color: #64748b; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: not-allowed;">
+                Locked Block
+            </button>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- VIEW 2: SPLIT SCREEN INTERACTIVE LESSON MODULE WORKSPACE -->
+    <div class="academy-workspace" id="active-lesson-workspace" style="display: none;">
+        
+        <!-- LEFT SCREEN COLUMN: EDUCATIONAL DATA (LOADED DYNAMICALLY BY JAVASCRIPT) -->
+        <div class="lesson-text-pane" id="lesson-left-text-container">
+            <!-- Content swaps out based on active lesson -->
+        </div>
+
+        <!-- RIGHT SCREEN COLUMN: LIVE SCENARIO INTERACTIVE SANDBOX -->
+        <div class="lesson-interactive-pane">
+            <h4 style="color: #38bdf8; font-size: 15px; margin-bottom: 10px;" id="sim-pane-title"><i class="fa-solid fa-terminal"></i> Interactive Threat Simulator Area</h4>
+            <p style="color: #94a3b8; font-size: 13px; margin-bottom: 20px;" id="sim-pane-desc">Inspect the simulation workspace below:</p>
+
+            <!-- THIS TARGET WINDOW ALLOWS SWAPPING INTERACTIVE SCREEN SIMULATIONS -->
+            <div id="sim-display-workspace" style="width: 100%;">
+                <!-- Loaded dynamically by JavaScript initialization -->
+            </div>
+
+            <!-- Academy Validation Quiz Entry -->
+            <div class="academy-quiz-zone" id="academy-quiz-container">
+                <!-- Loaded dynamically by JavaScript initialization -->
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= JAVASCRIPT ENGINE ================= -->
+<script>
+    let activeModule = "";
+
+    // Global simulation content states
+    const simulationViews = {
+        'email_inbox': `
+            <div class="email-simulator">
+                <div class="email-header">
+                    <div><b>From:</b> accounts-update@secure-update-fakebank.com</div>
+                    <div><b>To:</b> staff-fakebank@fakebank.com</div>
+                    <div><b>Subject:</b> Security Alert: Immediate Credential Verification Required!</div>
+                    <div><b>Date:</b> July 18, 2026</div>
+                </div>
+                <div class="email-body">
+                    <p>Dear Valued Employee,</p><br>
+                    <p>Our global directory system detected an unauthorized credential request loop matching your account signature. To avoid permanent profile suspension, you must update your master entry token sequence within the next 24 hours.</p><br>
+                    <p>Please log in immediately through our primary security portal gateway: 
+                       <span class="phish-link" onclick="revealPhishAlert()">https://fakebank.com/auth-verification-secure</span>
+                    </p><br>
+                    <p>Regards,<br>IT Helpdesk Administration</p>
+                </div>
+            </div>
+        `,
+        'hydra_bruteforce': `
+            <div style="background: #1e293b; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #334155;">
+                <span style="color: #94a3b8; font-size: 12px; font-weight: bold; display: block; margin-bottom: 5px;">🔧 Run Automated Attack Tool:</span>
+                <button onclick="runHydraSimulation()" style="background: #ef4444; color: #fff; font-weight: bold; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-play"></i> Execute Hydra Brute Force
+                </button>
+            </div>
+            <div class="terminal-box" id="hydra-log-terminal">
+                [SYSTEM] Ready to launch password dictionary attack framework array... Click "Execute Hydra Brute Force" above.
+            </div>
+        `,
+        'packet_sniffer_stream': `
+            <div style="background: #1e293b; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #334155;">
+                <span style="color: #94a3b8; font-size: 12px; font-weight: bold; display: block; margin-bottom: 5px;">📡 Network Control Option:</span>
+                <button onclick="runSnifferSimulation()" style="background: #38bdf8; color: #020617; font-weight: bold; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-network-wired"></i> Intercept Raw Packets
+                </button>
+            </div>
+            <div class="terminal-box" id="sniff-log-terminal" style="color: #a7f3d0; border-color: #10b981;">
+                [SNIFFER] interface: eth0 in promiscuous mode... Standing by for network traffic capture triggers.
+            </div>
+        `,
+        'sqli_terminal_workspace': `
+            <div class="sqli-cli">
+                <div class="cli-header">
+                    <span>⚡ CyberForge Interactive Vulnerable Database Terminal</span>
+                    <span>v2.0.26</span>
+                </div>
+                <div id="cli-output-log" style="height: 180px; overflow-y: auto;">
+                    <div class="cli-line" style="color: #8892b0;">// Target Vulnerable Backend Query:</div>
+                    <div class="cli-line" style="color: #38bdf8; font-weight: bold; margin-bottom: 15px;">
+                        SELECT * FROM accounts WHERE username = '<span id="query-username-visual" style="color: #ef4444;">admin</span>' AND password = '...';
+                    </div>
+                    <div class="cli-line">[SYSTEM] Vulnerable web portal active. You can run authentication bypass or Union-based SQLi payload probes.</div>
+                </div>
+                <div class="cli-input-row" style="display:flex; align-items:center; gap:8px; background:#0b1120; padding:8px; border-radius:4px; border:1px solid #1e293b; margin-top:10px;">
+                    <span class="cli-prompt" style="color: #10b981; font-weight: bold; font-size: 14px; white-space: nowrap;">root@cyberforge:~# injection_val=</span>
+                    <input type="text" id="cli-payload-input" style="flex:1; background:transparent; border:none; color:#fff; font-family:'Courier New', monospace; font-size:14px; outline:none;" placeholder="Enter SQLi payload here..." oninput="updateVisualSQLQuery(this.value)">
+                    <button onclick="executeSQLInjectionPayload()" style="background:#10b981; border:none; color:#020617; font-weight:bold; padding:6px 12px; border-radius:4px; cursor:pointer;">Inject</button>
+                </div>
+            </div>
+        `,
+        'xss_sandbox_workspace': `
+            <div class="xss-browser">
+                <div class="browser-topbar">
+                    <div class="browser-dots">
+                        <div class="browser-dot" style="background:#ff5f56;"></div>
+                        <div class="browser-dot" style="background:#ffbd2e;"></div>
+                        <div class="browser-dot" style="background:#27c93f;"></div>
+                    </div>
+                    <div class="browser-address">https://forge-reviews-portal.local/search</div>
+                </div>
+                <div class="browser-content">
+                    <p style="font-size:12px; color:#64748b; margin-bottom:8px; font-weight:600;">Search Community Product Reviews:</p>
+                    <div class="search-box-row">
+                        <input type="text" id="xss-search-input" class="search-input" placeholder="Type review tags (e.g., tech, shoes)...">
+                        <button onclick="executeXSSPayload()" class="search-btn-ui">Search</button>
+                    </div>
+                    <div class="output-container-ui" id="xss-ui-output">
+                        <span style="color:#94a3b8; font-style:italic;">Results will reflect here...</span>
+                    </div>
+                </div>
+                <div class="xss-console" id="browser-dev-console">
+                    [Console] Browser engine initialized. Session cookies assigned. Status: Ready.
+                </div>
+            </div>
+        `,
+        'lfi_sandbox_workspace': `
+            <div class="xss-browser">
+                <div class="browser-topbar">
+                    <div class="browser-dots">
+                        <div class="browser-dot" style="background:#ff5f56;"></div>
+                        <div class="browser-dot" style="background:#ffbd2e;"></div>
+                        <div class="browser-dot" style="background:#27c93f;"></div>
+                    </div>
+                    <div class="browser-address">https://forge-file-viewer.local/view?page=<span id="lfi-param-visual" style="color:#38bdf8; font-weight:bold;">home.php</span></div>
+                </div>
+                <div class="browser-content" style="background:#fafafa; color:#1e293b;">
+                    <div class="search-box-row" style="margin-bottom:12px;">
+                        <span style="font-size:12px; font-weight:600; display:flex; align-items:center; color:#4b5563;">File Parameter:</span>
+                        <input type="text" id="lfi-file-input" class="search-input" placeholder="e.g., home.php" oninput="updateVisualLFIParam(this.value)">
+                        <button onclick="executeLFIPayload()" class="search-btn-ui" style="background:#ef4444;">Fetch File</button>
+                    </div>
+                    <div class="output-container-ui" id="lfi-ui-output" style="background:#07040d; color:#00ff00; font-family:'Courier New', monospace; font-size:11px; white-space:pre-wrap; border-left:4px solid #ef4444; min-height:100px; padding:15px; overflow-y:auto; max-height:180px;">
+                        <span style="color:#94a3b8; font-style:italic;">File contents display window...</span>
+                    </div>
+                </div>
+            </div>
+        `,
+        'privesc_terminal_workspace': `
+            <div class="sqli-cli" style="border-color: #ef4444; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.15);">
+                <div class="cli-header" style="color: #ef4444;">
+                    <span>🐧 Interactive Linux Terminal (Low-Privilege Shell)</span>
+                    <span>user@victim-machine:~$</span>
+                </div>
+                <div id="privesc-cli-output-log" style="font-family: monospace; height: 220px; overflow-y: auto; margin-bottom: 10px;">
+                    <div class="cli-line" style="color: #64748b;">user@victim-machine:~$ cat /etc/crontab</div>
+                    <div class="cli-line" style="color: #cbd5e1; margin-bottom: 10px;">
+                        # m h dom mon dow user  command<br>
+                        */1 * *   *   *   root  /opt/backup.sh
+                    </div>
+                    <div class="cli-line" style="color: #64748b;">user@victim-machine:~$ cat /opt/backup.sh</div>
+                    <div class="cli-line" style="color: #cbd5e1; margin-bottom: 10px;">
+                        #!/bin/bash<br>
+                        cd /var/www/html && tar -czf /backup/archive.tar.gz *
+                    </div>
+                    <div class="cli-line" style="color: #eab308;">[!] Notice: You can exploit wildcard cron jobs or find SUID binaries on this machine to elevate.</div>
+                </div>
+                <div class="cli-input-row" style="border-color: #334155;">
+                    <span class="cli-prompt" style="color: #ef4444;">user@victim-machine:~$ </span>
+                    <input type="text" id="privesc-payload-input" class="cli-field" placeholder="Type Linux command here...">
+                    <button onclick="executePrivEscCommand()" style="background:#ef4444; border:none; color:#fff; font-weight:bold; padding:6px 12px; border-radius:4px; cursor:pointer;">Run</button>
+                </div>
+            </div>
+        `,
+        'win_enum_workspace': `
+            <div class="win-explorer">
+                <div class="win-nav-bar">
+                    <i class="fa-solid fa-folder-open" style="color:#eab308;"></i>
+                    <span id="win-path-display">C:\Users\t-staff-fakebank\Documents</span>
+                </div>
+                <div class="win-grid-view" id="win-explorer-grid">
+                    <!-- Loaded dynamically via loadWinDirectory() -->
+                </div>
+                <div style="background:#0f172a; border-top:1px solid #374151; padding:12px; font-family:monospace; font-size:12px; color:#38bdf8;" id="win-sysinfo-console">
+                    [System Shell Active] Click on files or run built-in diagnostic enumeration buttons above to poll machine profile attributes.
+                </div>
+            </div>
+            <div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap;">
+                <button onclick="runWinEnumUtility('whoami')" style="background:#1e293b; border:1px solid #4b5563; color:#fff; font-family:monospace; padding:8px 14px; border-radius:4px; cursor:pointer; font-size:12px;">
+                    <i class="fa-solid fa-user-shield" style="color:#38bdf8;"></i> whoami /all
+                </button>
+                <button onclick="runWinEnumUtility('net_user')" style="background:#1e293b; border:1px solid #4b5563; color:#fff; font-family:monospace; padding:8px 14px; border-radius:4px; cursor:pointer; font-size:12px;">
+                    <i class="fa-solid fa-users" style="color:#10b981;"></i> net user
+                </button>
+                <button onclick="runWinEnumUtility('systeminfo')" style="background:#1e293b; border:1px solid #4b5563; color:#fff; font-family:monospace; padding:8px 14px; border-radius:4px; cursor:pointer; font-size:12px;">
+                    <i class="fa-solid fa-circle-info" style="color:#eab308;"></i> systeminfo
+                </button>
+            </div>
+        `,
+        'linux_enumeration_workspace': `
+            <div class="sqli-cli" style="border-color: #a855f7; box-shadow: 0 4px 20px rgba(168, 85, 247, 0.15);">
+                <div class="cli-header" style="color: #a855f7; border-color: #3b0764;">
+                    <span>🐧 Live Target Linux Audit Terminal</span>
+                    <span>audit-operator@internal-node:~$</span>
+                </div>
+                <div id="linux-cli-output-log" style="font-family: 'Courier New', monospace; height: 200px; overflow-y: auto; margin-bottom: 10px; font-size: 13px; line-height: 1.4; padding-right: 5px;">
+                    [AUDIT] Standard host reconnaissance vectors loaded.<br>
+                    Standing by for system configuration dump probes...
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; background: #090d16; padding: 10px; border-radius: 6px; border: 1px solid #1e293b;">
+                    <button onclick="runLinuxEnumUtility('uname')" style="background:#3b0764; border:1px solid #a855f7; color:#fff; padding:6px 12px; border-radius:4px; cursor:pointer; font-family:monospace; font-size:12px;">uname -a</button>
+                    <button onclick="runLinuxEnumUtility('ps')" style="background:#3b0764; border:1px solid #a855f7; color:#fff; padding:6px 12px; border-radius:4px; cursor:pointer; font-family:monospace; font-size:12px;">ps aux</button>
+                    <button onclick="runLinuxEnumUtility('netstat')" style="background:#3b0764; border:1px solid #a855f7; color:#fff; padding:6px 12px; border-radius:4px; cursor:pointer; font-family:monospace; font-size:12px;">netstat -tulnp</button>
+                </div>
+            </div>
+        `
+    };
+
+    // --- SOCIAL ENGINEERING FUNCTIONS ---
+    function startSocialEngineeringLesson() {
+        activeModule = "social_engineering";
+        document.getElementById("lesson-menu-grid").style.display = "none";
+        document.getElementById("active-lesson-workspace").style.display = "flex";
+        
+        document.getElementById("academy-view-title").innerText = "Training: Social Engineering Fundamentals";
+        document.getElementById("exit-lesson-btn").style.display = "block";
+        
+        document.getElementById("lesson-left-text-container").innerHTML = `
+            <div class="lesson-scroll">
+                <h3>Lesson Module: Social Engineering</h3>
+                <p>Social Engineering is the art of manipulating individuals into breaking normal security procedures or giving away confidential information, such as passwords, bank details, or access control parameters.</p>
+                <p>Unlike standard mechanical exploitation sweeps (like port scanning or software fuzzing), social engineering preys directly on human psychology elements: **Trust, Urgency, Authority, and Fear**.</p>
+                <div class="info-block" style="border-left-color: #10b981;">
+                    <strong>Core Vulnerability Concept: Phishing</strong><br>
+                    Phishing is a subcategory technique where attackers construct spoofed emails, text messages, or communications designed to look identical to trustworthy corporate organizations or administrators.
+                </div>
+                <p>Review the suspicious email simulation box rendered on the right panel to analyze the threat markers and complete the training quiz checkpoint validation parameters.</p>
+            </div>
+        `;
+
+        document.getElementById("sim-pane-title").innerHTML = `<i class="fa-solid fa-envelope-open-text"></i> Interactive Threat Simulator Area`;
+        document.getElementById("sim-pane-desc").innerText = `Inspect the inbound raw structure header fields inside the simulation block below:`;
+        reloadEmailSim();
+
+        document.getElementById("academy-quiz-container").innerHTML = `
+            <h5 style="color: #fff; font-size: 14px; margin-bottom: 5px;">Lesson Checkpoint Quiz</h5>
+            <p style="color: #94a3b8; font-size: 12px;">Analyze the simulated message headers carefully: What is the fake domain address used by the attacker in the <b>"From"</b> field?</p>
+            <div class="quiz-input-group">
+                <input type="text" id="academy-answer-field" class="input-style" placeholder="e.g., example.com">
+                <button class="submit-btn" onclick="checkAcademyAnswer('social_engineering')">Verify</button>
+            </div>
+            <div class="success-badge" id="academy-success-box"></div>
+        `;
+    }
+
+    function revealPhishAlert() {
+        document.getElementById('sim-display-workspace').innerHTML = `
+            <div style="background: #1e293b; padding: 10px; border-radius: 6px; display: flex; align-items: center; gap: 10px; margin-bottom: 15px; border: 1px solid #334155;">
+                <div style="color: #64748b; font-size: 12px;">🌐 URL Address Bar:</div>
+                <input type="text" value="https://secure-update-fakebank.com/login/auth" readonly 
+                       style="flex: 1; background: #020617; border: 1px solid #ef4444; color: #ef4444; padding: 6px 10px; border-radius: 4px; font-family: monospace; font-size: 13px; font-weight: bold; outline: none;">
+            </div>
+            <div style="background: #fff; color: #334; padding: 30px; border-radius: 8px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.5); margin-bottom: 20px;">
+                <h2 style="color: #0066cc; font-family: 'Arial', sans-serif; margin-bottom: 5px;">🏦 FakeBank Online</h2>
+                <p style="font-size: 12px; color: #666; margin-bottom: 20px;">Secure Employee Portal Login</p>
+                <input type="text" placeholder="Employee ID / Username" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;" disabled>
+                <input type="password" placeholder="Password" style="width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px;" disabled>
+                <button style="width: 100%; padding: 12px; background: #0066cc; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: not-allowed;">Sign In</button>
+                <div style="margin-top: 15px; background: rgba(239, 68, 68, 0.1); border: 1px dashed #ef4444; padding: 10px; border-radius: 4px; color: #ef4444; font-size: 12px; text-align: left; line-height: 1.4;">
+                    <b>🚨 PHISHING WARNING DETECTED:</b> Look at the red address bar above! The domain says <b>secure-update-fakebank.com</b>, NOT the official <b>fakebank.com</b>. Enter this domain in the quiz below to pass!
+                </div>
+                <button onclick="reloadEmailSim()" style="margin-top: 15px; background: #334155; color: white; border: none; padding: 8px 14px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600;">
+                    <i class="fa-solid fa-arrow-rotate-left"></i> Go Back to Email
+                </button>
+            </div>
+        `;
+    }
+
+    function reloadEmailSim() {
+        document.getElementById('sim-display-workspace').innerHTML = simulationViews['email_inbox'];
+    }
+
+    // --- PASSWORD ATTACKS FUNCTIONS ---
+    function startPasswordAttacksLesson() {
+        activeModule = "password_attacks";
+        document.getElementById("lesson-menu-grid").style.display = "none";
+        document.getElementById("active-lesson-workspace").style.display = "flex";
+        
+        document.getElementById("academy-view-title").innerText = "Training: Password Vulnerabilities & Brute Forcing";
+        document.getElementById("exit-lesson-btn").style.display = "block";
+        
+        document.getElementById("lesson-left-text-container").innerHTML = `
+            <div class="lesson-scroll">
+                <h3>Lesson Module: Password Attacks</h3>
+                <p>Authentication systems form the frontline perimeter armor of structural infrastructure layouts. Attackers use automated tools to break into accounts using multiple quick password variation lists.</p>
+                <p>There are two primary automated credential cracking loops:</p>
+                <ul>
+                    <li><b>1. Brute Force:</b> Systematically calculating and trying every possible combination of alphanumeric characters. Highly reliable but takes a huge amount of time.</li>
+                    <li><b>2. Dictionary Attack:</b> Utilizing a pre-compiled text collection list of the most commonly used phrases and breached data passwords (like <code>rockyou.txt</code>).</li>
+                </ul>
+                <div class="info-block" style="border-left-color: #ef4444;">
+                    <strong>Automated Tools Spotlight: Hydra</strong><br>
+                    Hydra is a highly parallelized network logon cracker supporting dozens of protocols. It fires requests at immense speeds to discover matching credentials.
+                </div>
+                <p>Click the <b>"Execute Hydra Brute Force"</b> trigger button on the right monitoring workstation console screen to watch the dictionary attack run live against an SSH endpoint!</p>
+            </div>
+        `;
+
+        document.getElementById("sim-pane-title").innerHTML = `<i class="fa-solid fa-terminal"></i> Kali Linux SSH Attack Console`;
+        document.getElementById("sim-pane-desc").innerText = `Launch Hydra to systematically attempt dictionary passwords against the root terminal target.`;
+        document.getElementById('sim-display-workspace').innerHTML = simulationViews['hydra_bruteforce'];
+
+        document.getElementById("academy-quiz-container").innerHTML = `
+            <h5 style="color: #fff; font-size: 14px; margin-bottom: 5px;">Lesson Checkpoint Quiz</h5>
+            <p style="color: #94a3b8; font-size: 12px;">Review the final line output of the Hydra tool dump string: What was the valid cracked **password found** for the user <code>admin</code>?</p>
+            <div class="quiz-input-group">
+                <input type="text" id="academy-answer-field" class="input-style" placeholder="Type discovered password here...">
+                <button class="submit-btn" onclick="checkAcademyAnswer('password_attacks')" style="background: #ef4444; color: #fff;">Verify</button>
+            </div>
+            <div class="success-badge" id="academy-success-box"></div>
+        `;
+    }
+
+    function runHydraSimulation() {
+        const terminal = document.getElementById("hydra-log-terminal");
+        terminal.innerHTML = "[Hydra Init] Launching parallel threads targeting ssh://10.0.0.15:22...<br>";
+        
+        let logs = [
+            "[ATTEMPT] user: admin | password: password123 -> Access Denied",
+            "[ATTEMPT] user: admin | password: login2025 -> Access Denied",
+            "[ATTEMPT] user: admin | password: fakebankadmin -> Access Denied",
+            "[ATTEMPT] user: admin | password: supersecure -> Access Denied",
+            "[ATTEMPT] user: admin | password: shadow123 -> [SUCCESS] MATCH FOUND!",
+            "<span style='color: #10b981; font-weight: bold;'>[10.0.0.15] Host cracked - 1 valid credential found:<br>Target user account: admin | Valid password: shadow123</span>"
+        ];
+        
+        let idx = 0;
+        let loop = setInterval(() => {
+            if(idx < logs.length) {
+                terminal.innerHTML += logs[idx] + "<br>";
+                idx++;
+            } else {
+                clearInterval(loop);
+            }
+        }, 800);
+    }
+
+    // --- PACKET SNIFFING FUNCTIONS ---
+    function startPacketSniffingLesson() {
+        activeModule = "packet_sniffing";
+        document.getElementById("lesson-menu-grid").style.display = "none";
+        document.getElementById("active-lesson-workspace").style.display = "flex";
+        
+        document.getElementById("academy-view-title").innerText = "Training: Network Promiscuous Sniffing & Inspection";
+        document.getElementById("exit-lesson-btn").style.display = "block";
+        
+        document.getElementById("lesson-left-text-container").innerHTML = `
+            <div class="lesson-scroll">
+                <h3>Lesson Module: Packet Sniffing</h3>
+                <p>Packet Sniffing is the method of intercepting and monitoring data packets migrating across a local network boundary using diagnostic monitoring tools.</p>
+                <p>When an application transmits information across a local network using cleartext protocols (like standard **HTTP, FTP, or Telnet**), every block snippet can be assembled back together visually by mid-route sniffers.</p>
+                <div class="info-block" style="border-left-color: #38bdf8;">
+                    <strong>Core Exposure Hazard: Plaintext Protocol Vulnerability</strong><br>
+                    Because plain text protocols lack asymmetric session encryption algorithms, critical variable arrays like <code>username=admin</code> and <code>password=secret</code> traveling in the body stream can be easily parsed out by an attacker.
+                </div>
+                <p>Click the <b>"Intercept Raw Packets"</b> button on the monitoring pane to activate the software interface hook and capture a live plain-text authentication sequence payload header loop!</p>
+            </div>
+        `;
+
+        document.getElementById("sim-pane-title").innerHTML = `<i class="fa-solid fa-network-wired"></i> Raw Network Log Capturer Console`;
+        document.getElementById("sim-pane-desc").innerText = `Engage the system hook framework to capture live unencrypted internal frame movements.`;
+        document.getElementById('sim-display-workspace').innerHTML = simulationViews['packet_sniffer_stream'];
+
+        document.getElementById("academy-quiz-container").innerHTML = `
+            <h5 style="color: #fff; font-size: 14px; margin-bottom: 5px;">Lesson Checkpoint Quiz</h5>
+            <p style="color: #94a3b8; font-size: 12px;">Inspect the unencrypted captured data string from the sniffer engine: What is the **secret token value** leaked in the cleartext payload?</p>
+            <div class="quiz-input-group">
+                <input type="text" id="academy-answer-field" class="input-style" placeholder="Type leaked token here...">
+                <button class="submit-btn" onclick="checkAcademyAnswer('packet_sniffing')">Verify</button>
+            </div>
+            <div class="success-badge" id="academy-success-box"></div>
+        `;
+    }
+
+    function runSnifferSimulation() {
+        const terminal = document.getElementById("sniff-log-terminal");
+        terminal.innerHTML = "[Capturing] Pulling datagram frames from interface loop device eth0...<br>";
+        
+        let networkStreams = [
+            "<div class='sniff-log'>[IP] 192.168.1.50 -> 192.168.1.1 | PROTO: DNS Query for mail.bank.corp</div>",
+            "<div class='sniff-log'>[IP] 192.168.1.22 -> 10.0.0.5   | PROTO: TCP [SYN] Port 80 stream active</div>",
+            "<div class='sniff-log'>[IP] 10.0.0.5   -> 192.168.1.22 | PROTO: TCP [SYN, ACK] Port 80 handshaking</div>",
+            "<div class='sniff-log'>[IP] 192.168.1.22 -> 10.0.0.5   | PROTO: HTTP POST Request (Inbound Plaintext)</div>",
+            '<div class="sniff-log" style="color: #ef4444; background: rgba(239, 68, 68, 0.1); padding: 5px; border-radius: 4px;"><b>[UNENCRYPTED PAYLOAD REASSEMBLED]:</b><br>POST /api/login HTTP/1.1<br>Host: internal.bank.corp<br>Content-Type: application/json<br><br>{ "user": "admin", "session_access_token": "FORGE99X" }</div>'
+        ];
+        
+        let idx = 0;
+        let loop = setInterval(() => {
+            if(idx < networkStreams.length) {
+                terminal.innerHTML += networkStreams[idx];
+                idx++;
+            } else {
+                clearInterval(loop);
+            }
+        }, 800);
+    }
+
+    // --- SQL INJECTION FUNCTIONS ---
+    function startSQLInjectionLesson() {
+        activeModule = "sql_injection";
+        document.getElementById("lesson-menu-grid").style.display = "none";
+        document.getElementById("active-lesson-workspace").style.display = "flex";
+        
+        document.getElementById("academy-view-title").innerText = "Training: SQL Injection (SQLi) Web Exploitation";
+        document.getElementById("exit-lesson-btn").style.display = "block";
+        
+        document.getElementById("lesson-left-text-container").innerHTML = `
+            <div class="lesson-scroll">
+                <h3>Lesson Module: SQL Injection</h3>
+                <p>SQL Injection (SQLi) occurs when arbitrary SQL statements are injected into database entry points to hijack backend queries.</p>
+                <p>SQLi types vary depending on the attacker's approach:</p>
+                <ul>
+                    <li><b>1. Tautology (Auth Bypass):</b> Injecting <code>' OR '1'='1</code> so the query evaluates to TRUE globally, bypassing login panels.</li>
+                    <li><b>2. Union-Based SQLi:</b> Using the <code>UNION</code> operator to append custom queries and dump information from other tables.</li>
+                </ul>
+                <div class="info-block" style="border-left-color: #10b981;">
+                    <strong>Advanced Union Injection Concept:</strong><br>
+                    To execute a Union injection successfully, the injected query must return the exact same number of columns as the original query.
+                </div>
+                <p>Execute a Union-based SQLi to dump the <code>users</code> table credentials. Type the exact payload: <code>' UNION SELECT username, password_hash, sys_secret_flag FROM users --</code> inside the hacker console!</p>
+            </div>
+        `;
+
+        document.getElementById("sim-pane-title").innerHTML = `<i class="fa-solid fa-terminal"></i> Database Exploitation Shell Terminal`;
+        document.getElementById("sim-pane-desc").innerText = `Manipulate the vulnerable backend query parameter down below.`;
+        document.getElementById('sim-display-workspace').innerHTML = simulationViews['sqli_terminal_workspace'];
+
+        document.getElementById("academy-quiz-container").innerHTML = `
+            <h5 style="color: #fff; font-size: 14px; margin-bottom: 5px;">Lesson Checkpoint Quiz</h5>
+            <p style="color: #94a3b8; font-size: 12px;">Bypass the database: What is the **secret system flag string** revealed from the administrator accounts dump row?</p>
+            <div class="quiz-input-group">
+                <input type="text" id="academy-answer-field" class="input-style" placeholder="Type dumped system flag here...">
+                <button class="submit-btn" onclick="checkAcademyAnswer('sql_injection')">Verify</button>
+            </div>
+            <div class="success-badge" id="academy-success-box"></div>
+        `;
+    }
+
+    function updateVisualSQLQuery(value) {
+        const queryVisual = document.getElementById("query-username-visual");
+        queryVisual.innerText = value.trim() === "" ? "admin" : value;
+    }
+
+    function executeSQLInjectionPayload() {
+        const inputVal = document.getElementById("cli-payload-input").value.trim();
+        const log = document.getElementById("cli-output-log");
+        
+        log.innerHTML += `<div class="cli-line" style="color: #10b981;">&gt; Executing SQL payload query...</div>`;
+        log.scrollTop = log.scrollHeight;
+
+        setTimeout(() => {
+            if (inputVal === "' UNION SELECT username, password_hash, sys_secret_flag FROM users --") {
+                log.innerHTML += `
+                    <div class="cli-line" style="color: #10b981; font-weight: bold;">[SUCCESS] Union query matched column count! Merging user dataset...</div>
+                    <div class="cli-line" style="color: #fff; background: rgba(16, 185, 129, 0.1); padding: 10px; border-radius: 4px; border: 1px dashed #10b981; margin-top: 10px; font-size:11px; font-family:monospace;">
+                        +-------------------+---------------------+----------------------------+<br>
+                        | username          | password_hash       | sys_secret_flag            |<br>
+                        +-------------------+---------------------+----------------------------+<br>
+                        | admin             | $2b$12$ExPloit...   | <span style="color:#eab308; font-weight:bold;">SQLI_UNION_SUCCESS_99</span>      |<br>
+                        | t-staff-fakebank  | $2b$12$FkBnK89...   | SQLI_MEMBER_TOKEN_4452     |<br>
+                        +-------------------+---------------------+----------------------------+
+                    </div>
+                `;
+            } else if (inputVal === "' OR '1'='1" || inputVal === "' OR 1=1 --") {
+                log.innerHTML += `
+                    <div class="cli-line" style="color: #10b981; font-weight: bold;">[SUCCESS] Auth bypass matched! Query returned true.</div>
+                    <div class="cli-line" style="color: #94a3b8; font-size:11px;">(Logon accepted: Administrator session active. Bypassed table output.)</div>
+                `;
+            } else {
+                log.innerHTML += `<div class="cli-line" style="color: #ef4444;">[ERROR] SQL Syntax Error: Column count mismatch in UNION SELECT query or invalid breakout quote.</div>`;
+            }
+            log.scrollTop = log.scrollHeight;
+        }, 600);
+    }
+
+    // --- CROSS-SITE SCRIPTING (XSS) FUNCTIONS ---
+    function startXSSLesson() {
+        activeModule = "xss";
+        document.getElementById("lesson-menu-grid").style.display = "none";
+        document.getElementById("active-lesson-workspace").style.display = "flex";
+        
+        document.getElementById("academy-view-title").innerText = "Training: Cross-Site Scripting (XSS) Frontend Hijacking";
+        document.getElementById("exit-lesson-btn").style.display = "block";
+        
+        document.getElementById("lesson-left-text-container").innerHTML = `
+            <div class="lesson-scroll">
+                <h3>Lesson Module: Cross-Site Scripting (XSS)</h3>
+                <p>Cross-Site Scripting (XSS) occurs when an application receives untrusted user inputs and reflects them back into the browser document layout without escaping or sanitization loops.</p>
+                <p>This omission permits attackers to execute arbitrary JavaScript fragments inside the context profile of the victim's browser session, leading to cookie theft, DOM defacement, or CSRF chains.</p>
+                <div class="info-block" style="border-left-color: #3b82f6;">
+                    <strong>Classic Reflected Script Tag Payload:</strong><br>
+                    <code>&amp;lt;script&amp;gt;alert('XSS')&amp;lt;/script&amp;gt;</code><br><br>
+                    When injected into an unescaped search field, the browser parses the text as an active script container rather than a safe string text element, running it instantly.
+                </div>
+                <p>Type the standard script alert trigger payload <code>&amp;lt;script&amp;gt;alert('XSS')&amp;lt;/script&amp;gt;</code> into the simulated portal search input row on the right pane and click <b>Search</b> to capture the token leaks!</p>
+            </div>
+        `;
+
+        document.getElementById("sim-pane-title").innerHTML = `<i class="fa-solid fa-window-maximize"></i> Simulated Target Browser Sandbox`;
+        document.getElementById("sim-pane-desc").innerText = `Test reflecting input queries onto the document template viewport structure.`;
+        document.getElementById('sim-display-workspace').innerHTML = simulationViews['xss_sandbox_workspace'];
+
+        document.getElementById("academy-quiz-container").innerHTML = `
+            <h5 style="color: #fff; font-size: 14px; margin-bottom: 5px;">Lesson Checkpoint Quiz</h5>
+            <p style="color: #94a3b8; font-size: 12px;">Trigger the script alert reflection: What is the secure **session document cookie string token** printed out to the browser dev console window?</p>
+            <div class="quiz-input-group">
+                <input type="text" id="academy-answer-field" class="input-style" placeholder="Type discovered cookie token here...">
+                <button class="submit-btn" onclick="checkAcademyAnswer('xss')" style="background:#3b82f6; color:#fff;">Verify</button>
+            </div>
+            <div class="success-badge" id="academy-success-box"></div>
+        `;
+    }
+
+    function executeXSSPayload() {
+        const inputVal = document.getElementById("xss-search-input").value.trim();
+        const outputBox = document.getElementById("xss-ui-output");
+        const consoleLog = document.getElementById("browser-dev-console");
+        
+        const xssPattern = /^<script>\s*alert\(['"]XSS['"]\)\s*<\/script>$/i;
+        if (xssPattern.test(inputVal)) {
+            outputBox.innerText = "Search Results for: " + inputVal;
+            alert("🔒 Simulation Event: Injection loop triggered successfully inside target browser DOM context!");
+            consoleLog.innerHTML = `
+                <span style="color:#ef4444;">[XSS ALERT EXECUTED] Script payload executed inside sandbox context. Dumping active memory context arrays...</span><br>
+                <span style="color:#10b981; font-weight:bold;">[COOKIE EXPOSED]: document.cookie = "session_token=XSS_COOKIE_STEAL_887"</span>
+            `;
+        } else if (inputVal !== "") {
+            outputBox.innerHTML = `Search Results for: <b>` + inputVal + `</b>`;
+            consoleLog.innerHTML = `[Console] Executed clean query lookup mapping for query keyword parameters: "${inputVal}". Zero triggers tripped.`;
+        }
+    }
+
+    // --- LOCAL FILE INCLUSION (LFI) FUNCTIONS ---
+    function startLFILesson() {
+        activeModule = "lfi";
+        document.getElementById("lesson-menu-grid").style.display = "none";
+        document.getElementById("active-lesson-workspace").style.display = "flex";
+        
+        document.getElementById("academy-view-title").innerText = "Training: Local File Inclusion (LFI) Directory Traversal";
+        document.getElementById("exit-lesson-btn").style.display = "block";
+        
+        document.getElementById("lesson-left-text-container").innerHTML = `
+            <div class="lesson-scroll">
+                <h3>Lesson Module: Local File Inclusion (LFI)</h3>
+                <p>Local File Inclusion (LFI) occurs when a web application accepts user-supplied path inputs to dynamically fetch server files without sanitizing directory traversal characters (like <code>../</code>).</p>
+                <p>By inputting relative paths containing traversal sequences, threat actors escape the webroot folder jail and view highly sensitive files stored elsewhere on the host filesystem (such as system user lists or access credentials).</p>
+                <div class="info-block" style="border-left-color: #ef4444;">
+                    <strong>Classic Traversal Sequence: <code>../../../../etc/passwd</code></strong><br>
+                    Every <code>../</code> moves up one level in the directory hierarchy. Appending enough traversals guarantees hitting the root folder <code>/</code>, allowing the attacker to reference literal system paths like <code>/etc/passwd</code> directly.
+                </div>
+                <p>Enter the traversal payload <code>../../../../etc/passwd</code> in the parameter input box on the right pane to leak the host server password hashes!</p>
+            </div>
+        `;
+
+        document.getElementById("sim-pane-title").innerHTML = `<i class="fa-solid fa-window-maximize"></i> Simulated File Viewer Application`;
+        document.getElementById("sim-pane-desc").innerText = `Test traversing directory structures by inputting custom file page paths.`;
+        document.getElementById('sim-display-workspace').innerHTML = simulationViews['lfi_sandbox_workspace'];
+
+        document.getElementById("academy-quiz-container").innerHTML = `
+            <h5 style="color: #fff; font-size: 14px; margin-bottom: 5px;">Lesson Checkpoint Quiz</h5>
+            <p style="color: #94a3b8; font-size: 12px;">Leak the host password file: What is the **administrator password hash** discovered inside the <code>/etc/passwd</code> payload dump?</p>
+            <div class="quiz-input-group">
+                <input type="text" id="academy-answer-field" class="input-style" placeholder="Type password hash here...">
+                <button class="submit-btn" onclick="checkAcademyAnswer('lfi')" style="background:#ef4444; color:#fff;">Verify</button>
+            </div>
+            <div class="success-badge" id="academy-success-box"></div>
+        `;
+    }
+
+    function updateVisualLFIParam(value) {
+        const visual = document.getElementById("lfi-param-visual");
+        visual.innerText = value.trim() === "" ? "home.php" : value;
+    }
+
+    function executeLFIPayload() {
+        const inputVal = document.getElementById("lfi-file-input").value.trim();
+        const output = document.getElementById("lfi-ui-output");
+
+        if (inputVal === "../../../../etc/passwd" || inputVal === "../../../etc/passwd" || inputVal === "/etc/passwd") {
+            output.innerHTML = `
+root:x:0:0:root:/root:/bin/bash
+bin:x:1:1:bin:/bin:/sbin/nologin
+daemon:x:2:2:daemon:/sbin:/sbin/nologin
+mail:x:8:12:mail:/var/spool/mail:/sbin/nologin
+operator:x:11:0:operator:/root:/sbin/nologin
+<span style="color:#eab308; font-weight:bold;">administrator:x:0:0::/root:/bin/bash:$6$fakebank$9x12yz</span>
+            `;
+        } else if (inputVal === "home.php" || inputVal === "about.php" || inputVal === "contact.php") {
+            output.innerText = `[INFO] Rendering static file layout for resource: ${inputVal}\n\nLoading file content templates... Success.`;
+        } else {
+            output.innerHTML = `<span style="color:#ef4444;">[ERROR 404] Resource not found: "${inputVal}". Traversal logic succeeded but path did not target a valid file.</span>`;
+        }
+    }
+
+    // --- PRIVILEGE ESCALATION FUNCTIONS ---
+    function startPrivEscLesson() {
+        activeModule = "privilege_escalation";
+        document.getElementById("lesson-menu-grid").style.display = "none";
+        document.getElementById("active-lesson-workspace").style.display = "flex";
+        
+        document.getElementById("academy-view-title").innerText = "Training: Linux Privilege Escalation (Wildcard & SUID Exploitation)";
+        document.getElementById("exit-lesson-btn").style.display = "block";
+        
+        document.getElementById("lesson-left-text-container").innerHTML = `
+            <div class="lesson-scroll">
+                <h3>Lesson Module: Privilege Escalation</h3>
+                <p>Privilege Escalation occurs when an attacker obtains an initial low-privilege access footprint and exploits system flaws to ascend to administrative security permissions (root/SYSTEM).</p>
+                <p>Common Linux exploit paths include:</p>
+                <ul>
+                    <li><b>1. Wildcard Injection:</b> Exploiting cron scripts running commands like <code>tar -czf archive.tar.gz *</code> as root to run arbitrary command checkpoints.</li>
+                    <li><b>2. SUID Binary Abuse:</b> Exploiting executables with the Set Owner User ID (SUID) bit enabled, letting low-privileged users execute them with owner (root) access.</li>
+                </ul>
+                <div class="info-block" style="border-left-color: #ef4444;">
+                    <strong>SUID Hunting:</strong><br>
+                    You can list SUID executables by running:<br>
+                    <code>find / -perm -4000 -type f 2&gt;/dev/null</code>
+                </div>
+                <p>Search for SUID binaries in the terminal, identify the vulnerable SUID wrapper (<code>/usr/bin/find</code>), and run it with execution parameters to spawn a root prompt!</p>
+            </div>
+        `;
+
+        document.getElementById("sim-pane-title").innerHTML = `<i class="fa-solid fa-terminal"></i> Linux Privilege Escalation Core Console`;
+        document.getElementById("sim-pane-desc").innerText = `Analyze permissions and SUID configurations to elevate terminal privileges.`;
+        document.getElementById('sim-display-workspace').innerHTML = simulationViews['privesc_terminal_workspace'];
+
+        document.getElementById("academy-quiz-container").innerHTML = `
+            <h5 style="color: #fff; font-size: 14px; margin-bottom: 5px;">Lesson Checkpoint Quiz</h5>
+            <p style="color: #94a3b8; font-size: 12px;">Trigger the SUID root shell escape: What is the **secret root system flag string** revealed after elevating privilege?</p>
+            <div class="quiz-input-group">
+                <input type="text" id="academy-answer-field" class="input-style" placeholder="Type root flag string here...">
+                <button class="submit-btn" onclick="checkAcademyAnswer('privilege_escalation')" style="background:#ef4444; color:#fff;">Verify</button>
+            </div>
+            <div class="success-badge" id="academy-success-box"></div>
+        `;
+    }
+
+    function executePrivEscCommand() {
+        const inputVal = document.getElementById("privesc-payload-input").value.trim();
+        const log = document.getElementById("privesc-cli-output-log");
+        
+        log.innerHTML += `<div class="cli-line" style="color: #ef4444;">$ ${inputVal}</div>`;
+        log.scrollTop = log.scrollHeight;
+        
+        setTimeout(() => {
+            if (inputVal === "find / -perm -4000 -type f 2>/dev/null" || inputVal === "find / -perm -4000 -type f 2&gt;/dev/null") {
+                log.innerHTML += `
+                    <div class="cli-line" style="color: #cbd5e1;">
+                        /usr/lib/dbus-1.0/dbus-daemon-launch-helper<br>
+                        /usr/lib/openssh/ssh-keysign<br>
+                        /usr/bin/passwd<br>
+                        /usr/bin/chsh<br>
+                        /usr/bin/gpasswd<br>
+                        <span style="color:#eab308; font-weight:bold;">/usr/bin/find (SUID Bit Enabled!)</span>
+                    </div>
+                `;
+            } else if (inputVal === "find . -exec /bin/sh -p \;" || inputVal === "find / -exec /bin/sh -p \; -quit" || inputVal === "/usr/bin/find . -exec /bin/sh -p \;") {
+                log.innerHTML += `
+                    <div class="cli-line" style="color: #10b981; font-weight: bold; background: rgba(16, 185, 129, 0.1); padding: 10px; border-radius: 4px; border: 1px dashed #10b981; margin-top: 5px;">
+                        [SUCCESS] SUID find execution dropped low-priv shell to root!<br>
+                        root@victim-machine:~# id<br>
+                        <span style="color:#cbd5e1;">uid=1001(user) gid=1001(user) euid=0(root) egid=0(root)</span><br>
+                        root@victim-machine:~# cat /root/root.txt<br>
+                        FLAG VALUE DETECTED: <span style="color:#eab308; font-weight:bold;">ROOT_PRIV_ESC_LOCAL_99</span>
+                    </div>
+                `;
+            } else if (inputVal.includes("exploit.sh")) {
+                log.innerHTML += `
+                    <div class="cli-line" style="color: #10b981;">[+] Exploit vector script successfully staged in local folder!</div>
+                    <div class="cli-line" style="color: #10b981;">[+] Injecting wild card checkpoint argument triggers...</div>
+                    <div class="cli-line" style="color: #38bdf8;">[*] Waiting for root system cron job check loop (approx 1 min)...</div>
+                    <div class="cli-line" style="color: #10b981; font-weight: bold; background: rgba(16, 185, 129, 0.1); padding: 10px; border-radius: 4px; border: 1px dashed #10b981; margin-top: 5px;">
+                        [SUCCESS] Cron job fired script execution as ROOT!<br>
+                        root@victim-machine:~# cat /root/root.txt<br>
+                        FLAG VALUE DETECTED: <span style="color:#eab308; font-weight:bold;">ROOT_PRIV_ESC_LOCAL_99</span>
+                    </div>
+                `;
+            } else {
+                log.innerHTML += `<div class="cli-line" style="color: #64748b;">[SYSTEM] Command executed in low-privilege context. Zero configuration updates tracked. Try running SUID checks or wildcard scripts.</div>`;
+            }
+            log.scrollTop = log.scrollHeight;
+        }, 800);
+    }
+
+    // --- WINDOWS ENUMERATION FUNCTIONS ---
+    function startWinEnumLesson() {
+        activeModule = "windows_enumeration";
+        document.getElementById("lesson-menu-grid").style.display = "none";
+        document.getElementById("active-lesson-workspace").style.display = "flex";
+        
+        document.getElementById("academy-view-title").innerText = "Training: Windows Internal Discovery & Enumeration";
+        document.getElementById("exit-lesson-btn").style.display = "block";
+        
+        document.getElementById("lesson-left-text-container").innerHTML = `
+            <div class="lesson-scroll">
+                <h3>Lesson Module: Windows Enumeration</h3>
+                <p>System Enumeration is the process of gathering detailed blueprints about an operating profile environment once entry has been established.</p>
+                <p>Security practitioners examine active user listings, network session links, patches applied, and sensitive cleartext configuration profiles left behind on local disks.</p>
+                <div class="info-block" style="border-left-color: #38bdf8;">
+                    <strong>Core Local Information Targets:</strong><br>
+                    * <code>systeminfo</code>: OS version, patches, architecture details.<br>
+                    * <code>whoami /all</code>: group privilege profiles and security descriptors.<br>
+                    * Unattended setup configuration files.
+                </div>
+                <p>Investigate the compromised <b>FakeBank Workstation</b> filesystem on the right pane! Click on the directory folders and click the diagnostic utility helper buttons to parse out hidden flags!</p>
+            </div>
+        `;
+
+        document.getElementById("sim-pane-title").innerHTML = `<i class="fa-solid fa-window-restore"></i> Compromised FakeBank Host Sandbox Panel`;
+        document.getElementById("sim-pane-desc").innerText = `Navigate directory pathways or dump environmental variables to extract local vectors.`;
+        
+        document.getElementById('sim-display-workspace').innerHTML = simulationViews['win_enum_workspace'];
+        loadWinDirectory('documents');
+
+        document.getElementById("academy-quiz-container").innerHTML = `
+            <h5 style="color: #fff; font-size: 14px; margin-bottom: 5px;">Lesson Checkpoint Quiz</h5>
+            <p style="color: #94a3b8; font-size: 12px;">Enumerate the hidden parameters: What is the **secret build key sequence** found inside the hidden unpatched development log file?</p>
+            <div class="quiz-input-group">
+                <input type="text" id="academy-answer-field" class="input-style" placeholder="Type secret build key token...">
+                <button class="submit-btn" onclick="checkAcademyAnswer('windows_enumeration')" style="background:#38bdf8; color:#020617;">Verify</button>
+            </div>
+            <div class="success-badge" id="academy-success-box"></div>
+        `;
+    }
+
+    function loadWinDirectory(targetDir) {
+        const grid = document.getElementById("win-explorer-grid");
+        const pathDisplay = document.getElementById("win-path-display");
+        
+        if (targetDir === 'documents') {
+            pathDisplay.innerText = "C:\\Users\\t-staff-fakebank\\Documents";
+            grid.innerHTML = `
+                <div class="win-icon-btn" onclick="loadWinDirectory('sys_logs')">
+                    <i class="fa-solid fa-folder" style="color: #38bdf8;"></i>
+                    <span>System_Logs</span>
+                </div>
+                <div class="win-icon-btn" onclick="readWinFile('notes')">
+                    <i class="fa-solid fa-file-lines" style="color: #9ca3af;"></i>
+                    <span>readme.txt</span>
+                </div>
+            `;
+        } else if (targetDir === 'sys_logs') {
+            pathDisplay.innerText = "C:\\Users\\t-staff-fakebank\\Documents\\System_Logs";
+            grid.innerHTML = `
+                <div class="win-icon-btn" onclick="loadWinDirectory('documents')">
+                    <i class="fa-solid fa-arrow-turn-up" style="color: #eab308;"></i>
+                    <span>.. / Up</span>
+                </div>
+                <div class="win-icon-btn" onclick="readWinFile('secret_log')">
+                    <i class="fa-solid fa-file-shield" style="color: #ef4444;"></i>
+                    <span>debug_unattended.log</span>
+                </div>
+            `;
+        }
+    }
+
+    function readWinFile(fileType) {
+        const consoleLog = document.getElementById("win-sysinfo-console");
+        if(fileType === 'notes') {
+            consoleLog.innerHTML = `
+                <span style="color:#eab308;">[FILE CONTENT - readme.txt]:</span><br>
+                "FakeBank IT Notice: Do not leave sensitive configuration artifacts inside production environments. Legacy setups are archiving data loops inside the adjacent debug folders."
+            `;
+        } else if (fileType === 'secret_log') {
+            consoleLog.innerHTML = `
+                <span style="color:#ef4444; font-weight:bold;">[FILE CONTENT - debug_unattended.log]:</span><br>
+                Deployment Sequence Complete.<br>
+                Target Config Meta: Local Host Machine Build Sequence Profile Verified.<br>
+                <span style="color:#10b981; font-weight:bold;">SECRET_BUILD_KEY=WIN_SYS_ENUM_776</span>
+            `;
+        }
+    }
+
+    function runWinEnumUtility(utilityType) {
+        const consoleLog = document.getElementById("win-sysinfo-console");
+        if(utilityType === 'whoami') {
+            consoleLog.innerHTML = `
+                <span style="color:#38bdf8;">$ whoami /all</span><br>
+                USER INFORMATION: fakebank\\t-staff-fakebank S-1-5-21-3647...<br>
+                GROUP INFORMATION: Everyone, BUILTIN\\Users, NT AUTHORITY\\INTERACTIVE
+            `;
+        } else if(utilityType === 'net_user') {
+            consoleLog.innerHTML = `
+                <span style="color:#10b981;">$ net user</span><br>
+                User accounts for \\\\FAKEBANK-HOST:<br>
+                -------------------------------------------------------------------------------<br>
+                Administrator            Guest            t-staff-fakebank
+            `;
+        } else if(utilityType === 'systeminfo') {
+            consoleLog.innerHTML = `
+                <span style="color:#eab308;">$ systeminfo</span><br>
+                OS Name:                   Microsoft Windows 10 Enterprise<br>
+                OS Version:                10.0.19042 Build 19042<br>
+                Hotfix(s):                 4 Hotfixes Installed.
+            `;
+        }
+    }
+
+    // --- LINUX ENUMERATION FUNCTIONS ---
+    function startLinuxEnumLesson() {
+        activeModule = "linux_enumeration";
+        document.getElementById("lesson-menu-grid").style.display = "none";
+        document.getElementById("active-lesson-workspace").style.display = "flex";
+        
+        document.getElementById("academy-view-title").innerText = "Training: Linux Security Discovery & Enumeration";
+        document.getElementById("exit-lesson-btn").style.display = "block";
+        
+        document.getElementById("lesson-left-text-container").innerHTML = `
+            <div class="lesson-scroll">
+                <h3>Lesson Module: Linux System Enumeration</h3>
+                <p>When operating within a Linux target container, asset discovery requires analyzing network socket hooks, configuration files, and currently executing processes to spot security avenues.</p>
+                <p>Unencrypted diagnostic files, active internal web services, or outdated kernel parameters left running locally expose immense attack surface maps.</p>
+                <div class="info-block" style="border-left-color: #a855f7;">
+                    <strong>Core Infrastructure Inspection Commands:</strong><br>
+                    * <code>uname -a</code>: Queries the active OS kernel compilation release data.<br>
+                    * <code>ps aux</code>: Dumps all executing system software application process maps.<br>
+                    * <code>netstat -tulnp</code>: Maps open raw TCP/UDP networking port connections active on localhost.
+                </div>
+                <p>Click the inspection audit action utility buttons under the terminal box on the right pane to scan the operating target context and discover the hidden system flag entry parameters!</p>
+            </div>
+        `;
+
+        document.getElementById("sim-pane-title").innerHTML = `<i class="fa-solid fa-terminal"></i> Linux Host Enumeration Workspace`;
+        document.getElementById("sim-pane-desc").innerText = `Execute automated diagnostic commands to pull active runtime statistics.`;
+        document.getElementById('sim-display-workspace').innerHTML = simulationViews['linux_enumeration_workspace'];
+
+        document.getElementById("academy-quiz-container").innerHTML = `
+            <h5 style="color: #fff; font-size: 14px; margin-bottom: 5px;">Lesson Checkpoint Quiz</h5>
+            <p style="color: #94a3b8; font-size: 12px;">Review the networking ports list socket map using <b>netstat</b>: What is the custom service name descriptor string bound to port <code>8085</code>?</p>
+            <div class="quiz-input-group">
+                <input type="text" id="academy-answer-field" class="input-style" placeholder="Type matching internal service string...">
+                <button class="submit-btn" onclick="checkAcademyAnswer('linux_enumeration')" style="background:#a855f7; color:#fff;">Verify</button>
+            </div>
+            <div class="success-badge" id="academy-success-box"></div>
+        `;
+    }
+
+    function runLinuxEnumUtility(type) {
+        const log = document.getElementById("linux-cli-output-log");
+        if (type === 'uname') {
+            log.innerHTML = `
+                <span style="color: #a855f7;">audit-operator@internal-node:~$ uname -a</span><br>
+                Linux internal-node 5.4.0-105-generic #61-Ubuntu SMP Fri Feb 20 2026 x86_64 x86_64 GNU/Linux
+            `;
+        } else if (type === 'ps') {
+            log.innerHTML = `
+                <span style="color: #a855f7;">audit-operator@internal-node:~$ ps aux</span><br>
+                USER       PID  %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND<br>
+                root         1   0.0  0.1  42312  4104 ?        Ss   12:01   0:01 /sbin/init<br>
+                root       412   0.1  0.5 128440 12420 ?        Sl   12:02   0:05 /usr/bin/python3 /opt/api_server.py<br>
+                operator   882   0.0  0.2  21040  2408 pts/0    Ss+  12:15   0:00 /bin/bash
+            `;
+        } else if (type === 'netstat') {
+            log.innerHTML = `
+                <span style="color: #a855f7;">audit-operator@internal-node:~$ netstat -tulnp</span><br>
+                Active Internet connections (only servers)<br>
+                Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name<br>
+                tcp        0      0 127.0.0.1:22            0.0.0.0:*               LISTEN      105/sshd<br>
+                tcp        0      0 127.0.0.1:3306          0.0.0.0:*               LISTEN      214/mysqld<br>
+                tcp        0      0 127.0.0.1:8085          0.0.0.0:*               LISTEN      412/<span style="color:#eab308; font-weight:bold;">lx_dev_portal_alpha</span>
+            `;
+        }
+        log.scrollTop = log.scrollHeight;
+    }
+
+    // --- GLOBAL VALIDATION ROUTINES ---
+    function exitToLessonMenu() {
+        document.getElementById("active-lesson-workspace").style.display = "none";
+        document.getElementById("lesson-menu-grid").style.display = "grid";
+        document.getElementById("academy-view-title").innerText = "Cyber Defense Academy Workspace";
+        document.getElementById("exit-lesson-btn").style.display = "none";
+    }
+
+    function checkAcademyAnswer(lessonKey) {
+        let answer = document.getElementById("academy-answer-field").value.trim();
+        if (!answer) {
+            alert("Please enter your answer parameters first!");
+            return;
+        }
+        
+        fetch("/api/academy/verify", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                lesson_key: lessonKey,
+                answer: answer
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "success") {
+                let successBox = document.getElementById("academy-success-box");
+                successBox.innerText = `✓ Lesson Complete! Flag Acquired: ${data.flag}`;
+                successBox.style.display = "block";
+            } else {
+                alert(data.message || "Incorrect answer entry. Re-examine the scenario parameters closely!");
+            }
+        })
+        .catch(err => {
+            console.error("Error verifying answer:", err);
+            alert("Telemetry verification connection link failed.");
+        });
+    }
+</script>
+</body>
+</html>

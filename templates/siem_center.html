@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberForge - SIEM Correlation Center</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+    <style>
+        :root {
+            --bg-deep: #050814;
+            --bg-card: #0b0f19;
+            --bg-sidebar: #020617;
+            --border-color: #1f2937;
+            --text-primary: #f3f4f6;
+            --text-muted: #9ca3af;
+            --cyan-glow: #00ff99;
+            --alert-red: #ff3366;
+            --warning-amber: #facc15;
+            --info-blue: #38bdf8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR STYLING */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            flex-shrink: 0;
+            overflow-y: auto;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--cyan-glow);
+            margin-bottom: 30px;
+        }
+
+        .nav-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 25px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background-color: rgba(0, 255, 153, 0.08);
+            color: var(--cyan-glow);
+        }
+
+        .infra-section {
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+
+        .infra-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .infra-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--cyan-glow);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--cyan-glow);
+        }
+
+        /* MAIN CONTENT STYLE */
+        .main-canvas {
+            flex-grow: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .canvas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .header-left h1 {
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .header-left p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* TOP METRIC MATRIX */
+        .telemetry-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .widget-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .widget-card .title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .widget-card .value {
+            font-size: 24px;
+            font-weight: 700;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* MID SECTION GRID */
+        .siem-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.3fr;
+            gap: 20px;
+            height: 520px;
+        }
+
+        .panel-box {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        /* EVENT SCROLL CONTAINER */
+        .scroll-feed {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-right: 5px;
+        }
+
+        .event-node {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 12px;
+            font-family: monospace;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .event-node.critical { border-left: 3px solid var(--alert-red); }
+        .event-node.high { border-left: 3px solid #ff5500; }
+        .event-node.medium { border-left: 3px solid var(--warning-amber); }
+        .event-node.low { border-left: 3px solid var(--info-blue); }
+
+        .event-meta {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+            font-size: 10px;
+        }
+
+        /* INCIDENTS VIEW */
+        .incident-card {
+            background: rgba(255, 51, 102, 0.03);
+            border: 1px solid rgba(255, 51, 102, 0.2);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .incident-card.resolved {
+            background: rgba(0, 255, 153, 0.02);
+            border-color: rgba(0, 255, 153, 0.2);
+        }
+
+        .btn-resolve {
+            background: var(--cyan-glow);
+            border: none;
+            color: #000;
+            font-weight: bold;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .btn-resolve:hover { opacity: 0.9; }
+
+        .btn-resolve:disabled {
+            background: #1f2937;
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+        .text-red { color: var(--alert-red); }
+        .text-amber { color: var(--warning-amber); }
+    </style>
+</head>
+<body>
+
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar">
+        <div class="logo-area">
+            <i class="fa-solid fa-shield-halved"></i> CyberForge
+        </div>
+
+        <nav class="nav-group">
+            <a href="/dashboard" class="nav-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+            <a href="/hacker" class="nav-item"><i class="fa-solid fa-terminal"></i> Hacker Interface</a>
+            <a href="/victim" class="nav-item"><i class="fa-solid fa-desktop"></i> Victim Interface</a>
+            <a href="/labs/defensive" class="nav-item"><i class="fa-solid fa-flask"></i> Threat Lab Center</a>
+            <a href="/packet_sniffer" class="nav-item"><i class="fa-solid fa-network-wired"></i> Packet Sniffer</a>
+            <a href="/password_analyzer" class="nav-item"><i class="fa-solid fa-key"></i> Password Analyzer</a>
+            <a href="/ai_copilot" class="nav-item"><i class="fa-solid fa-robot"></i> AI Cyber Copilot</a>
+            <a href="/academy" class="nav-item"><i class="fa-solid fa-graduation-cap"></i> Cyber Defense Academy</a>
+            <a href="/report" class="nav-item"><i class="fa-solid fa-file-pdf"></i> Generate Report</a>
+            <a href="/awareness" class="nav-item"><i class="fa-solid fa-graduation-cap"></i> Cyber Safety Awareness</a>
+            
+            <!-- ADDONS -->
+            <a href="/scenario_engine" class="nav-item"><i class="fa-solid fa-gamepad"></i> Scenario Engine</a>
+            <a href="/gamification" class="nav-item"><i class="fa-solid fa-trophy"></i> Gamification</a>
+            <a href="/siem_center" class="nav-item active"><i class="fa-solid fa-server"></i> SIEM Center</a>
+            <a href="/ai_mentor" class="nav-item"><i class="fa-solid fa-graduation-cap"></i> AI Mentor Mode</a>
+            <a href="/report_center" class="nav-item"><i class="fa-solid fa-folder-open"></i> Report Center</a>
+            <a href="/logout" class="nav-item"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </nav>
+
+        <div class="infra-section">
+            <div class="infra-title">Infrastructure</div>
+            <div class="infra-item"><div class="status-dot"></div> Kali Linux</div>
+            <div class="infra-item"><div class="status-dot"></div> Metasploitable</div>
+            <div class="infra-item"><div class="status-dot"></div> Flask Server</div>
+            <div class="infra-item"><div class="status-dot"></div> SQLite Database</div>
+        </div>
+    </div>
+
+    <!-- MAIN WINDOW -->
+    <div class="main-canvas">
+        <div class="canvas-header">
+            <div class="header-left">
+                <h1>SIEM Real-Time Correlation Center</h1>
+                <p>Monitor raw firewall, authorization, and network system logs in real-time</p>
+            </div>
+        </div>
+
+        <!-- Metric telemetry row -->
+        <div class="telemetry-grid">
+            <div class="widget-card">
+                <span class="title">Total Raw Events</span>
+                <span class="value" id="stats-total-events" style="color:var(--info-blue);">0</span>
+            </div>
+            <div class="widget-card">
+                <span class="title">Unresolved Criticals</span>
+                <span class="value" id="stats-unresolved-incidents" style="color:var(--alert-red);">0</span>
+            </div>
+            <div class="widget-card">
+                <span class="title">Triggered Alerts</span>
+                <span class="value" id="stats-triggered-alerts" style="color:var(--warning-amber);">0</span>
+            </div>
+            <div class="widget-card">
+                <span class="title">SIEM Rule Linkers</span>
+                <span class="value" style="color:var(--cyan-glow);">3 Active</span>
+            </div>
+        </div>
+
+        <div class="siem-grid">
+            <!-- LEFT PANEL: REAL TIME STREAM -->
+            <div class="panel-box">
+                <div class="panel-title"><i class="fa-solid fa-signal"></i> Real-Time Incident Stream</div>
+                <div class="scroll-feed" id="event-stream-container">
+                    {% for ev in events %}
+                    <div class="event-node {{ ev.severity.lower() }}">
+                        <div class="event-meta">
+                            <span>{{ ev.event_source }} [{{ ev.event_type }}]</span>
+                            <span>{{ ev.timestamp.split(' ')[1] if ' ' in ev.timestamp else ev.timestamp }}</span>
+                        </div>
+                        <div style="font-weight:bold; margin-top:2px;">{{ ev.description }}</div>
+                        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">
+                            IP: {{ ev.src_ip }} -> {{ ev.dst_ip }} | Sev: {{ ev.severity }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: ALERTS AND CORRELATED INCIDENTS -->
+            <div class="panel-box">
+                <div class="panel-title"><i class="fa-solid fa-triangle-exclamation"></i> Correlated Incidents & Alerts</div>
+                
+                <div style="overflow-y: auto; flex-grow: 1; padding-right:5px;">
+                    <h3 style="font-size:12px; text-transform:uppercase; margin-bottom:10px; color:var(--cyan-glow);">Correlated Incidents Queue</h3>
+                    <div id="incidents-container">
+                        {% for inc in incidents %}
+                        <div class="incident-card {% if inc.status == 'RESOLVED' %}resolved{% endif %}" id="incident-{{ inc.id }}">
+                            <div>
+                                <div style="font-weight:bold; display:flex; align-items:center; gap:8px;">
+                                    <span class="{% if inc.severity == 'Critical' or inc.severity == 'High' %}text-red{% else %}text-amber{% endif %}">●</span>
+                                    {{ inc.title }} ({{ inc.severity }})
+                                </div>
+                                <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">{{ inc.description }}</div>
+                                <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">{{ inc.timestamp }}</div>
+                            </div>
+                            <div>
+                                <button class="btn-resolve" id="res-btn-{{ inc.id }}" {% if inc.status == 'RESOLVED' %}disabled{% endif %} data-incident-id="{{ inc.id }}">
+                                    {% if inc.status == 'RESOLVED' %}Resolved{% else %}Resolve{% endif %}
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <h3 style="font-size:12px; text-transform:uppercase; margin-top:25px; margin-bottom:10px; color:var(--warning-amber);">Rule Violations Log</h3>
+                    <div id="alerts-container">
+                        {% for al in alerts %}
+                        <div style="background:rgba(250, 204, 21, 0.02); border: 1px solid rgba(250, 204, 21, 0.15); border-radius:4px; padding:10px; margin-bottom:8px; font-size:12px;" id="alert-{{ al.id }}">
+                            <div style="font-weight:bold; display:flex; justify-content:space-between;">
+                                <span><i class="fa-solid fa-bell"></i> {{ al.title }}</span>
+                                <span style="font-family:monospace; font-size:10px;">{{ al.timestamp }}</span>
+                            </div>
+                            <div style="color:var(--text-muted); margin-top:4px;">{{ al.description }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SOCKET IO STREAM -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+
+        socket.on('connect', () => {
+            console.log("SIEM Socket Pipeline established.");
+        });
+
+        // Listen for new events
+        socket.on('new_siem_event', (event) => {
+            const container = document.getElementById("event-stream-container");
+            const node = document.createElement("div");
+            node.className = `event-node ${event.severity.lower ? event.severity.lower() : event.severity.toLowerCase()}`;
+            
+            const timeStr = event.timestamp.includes(' ') ? event.timestamp.split(' ')[1] : event.timestamp;
+            
+            node.innerHTML = `
+                <div class="event-meta">
+                    <span>${event.event_source} [${event.event_type}]</span>
+                    <span>${timeStr}</span>
+                </div>
+                <div style="font-weight:bold; margin-top:2px;">${event.description}</div>
+                <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">
+                    IP: ${event.src_ip} -> ${event.dst_ip} | Sev: ${event.severity}
+                </div>
+            `;
+            
+            container.insertBefore(node, container.firstChild);
+            
+            // Limit elements in feed to 50
+            if (container.children.length > 50) {
+                container.removeChild(container.lastChild);
+            }
+
+            fetchStats();
+        });
+
+        // Listen for correlated alerts
+        socket.on('new_siem_alert', (alert) => {
+            // Prepend alert
+            const alertsBox = document.getElementById("alerts-container");
+            const node = document.createElement("div");
+            node.style = "background:rgba(250, 204, 21, 0.02); border: 1px solid rgba(250, 204, 21, 0.15); border-radius:4px; padding:10px; margin-bottom:8px; font-size:12px;";
+            node.innerHTML = `
+                <div style="font-weight:bold; display:flex; justify-content:space-between;">
+                    <span><i class="fa-solid fa-bell"></i> ${alert.title}</span>
+                    <span style="font-family:monospace; font-size:10px;">${alert.timestamp}</span>
+                </div>
+                <div style="color:var(--text-muted); margin-top:4px;">${alert.description}</div>
+            `;
+            alertsBox.insertBefore(node, alertsBox.firstChild);
+
+            // Prepend incident dynamically (mock details calculated from alert title)
+            // It is safer to trigger fetch incidents list from API to guarantee full db synchronization.
+            setTimeout(fetchIncidents, 500);
+        });
+
+        async function fetchIncidents() {
+            const res = await fetch("/siem_center");
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(await res.text(), 'text/html');
+            const newIncList = htmlDoc.getElementById("incidents-container");
+            if (newIncList) {
+                document.getElementById("incidents-container").innerHTML = newIncList.innerHTML;
+            }
+            fetchStats();
+        }
+
+        async function resolveIncident(id) {
+            const res = await fetch(`/api/siem/incidents/resolve/${id}`, {
+                method: "POST"
+            });
+            const data = await res.json();
+            alert(data.message);
+            if (data.status === "success") {
+                const card = document.getElementById(`incident-${id}`);
+                if (card) {
+                    card.className += " resolved";
+                }
+                const btn = document.getElementById(`res-btn-${id}`);
+                if (btn) {
+                    btn.disabled = true;
+                    btn.style.background = "#1e293b";
+                    btn.style.color = "var(--text-muted)";
+                    btn.innerText = "Resolved";
+                }
+                fetchStats();
+            }
+        }
+
+        async function fetchStats() {
+            const res = await fetch("/api/siem/stats");
+            const data = await res.json();
+            if (data.status === "success") {
+                document.getElementById("stats-total-events").innerText = data.total_events;
+                document.getElementById("stats-triggered-alerts").innerText = 
+                    data.alerts_severity.Low + data.alerts_severity.Medium + data.alerts_severity.High + data.alerts_severity.Critical;
+                document.getElementById("stats-unresolved-incidents").innerText = data.incidents_status.ACTIVE || 0;
+            }
+        }
+
+        // Initialize statistics
+        fetchStats();
+
+        // Event delegation for resolving incidents
+        const incidentsContainer = document.getElementById("incidents-container");
+        if (incidentsContainer) {
+            incidentsContainer.addEventListener("click", (event) => {
+                if (event.target && event.target.classList.contains("btn-resolve")) {
+                    const id = event.target.getAttribute("data-incident-id");
+                    if (id) {
+                        resolveIncident(id);
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

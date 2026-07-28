@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CyberForge | Packet Sniffer</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/packet_sniffer.css') }}">
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+    <h2>🛡 CyberForge</h2>
+
+    <a href="/dashboard">Dashboard</a>
+
+    <a href="/hacker">Hacker Interface</a>
+
+    <a href="/victim">Victim Interface</a>
+
+    <a class="active" href="/packet_sniffer">Packet Sniffer</a>
+
+    <a href="/password_analyzer">Password Analyzer</a>
+
+    <a href="/ai_copilot">AI Cyber Copilot</a>
+
+    <a href="/academy">Cyber Defense Academy</a>
+
+    <a href="/activity_logs">Activity Logs</a>
+
+    <a href="/attack_timeline">Attack Timeline</a>
+
+    <a href="/report">Generate Report</a>
+
+    <a href="/logout">Logout</a>
+
+</div>
+
+<div class="main-content">
+
+    <div class="page-header">
+
+        <div>
+
+            <h1>📡 Packet Sniffer</h1>
+
+            <p>Live Network Traffic Monitoring</p>
+
+        </div>
+
+        <div class="status-box">
+
+            <span id="capture-status">
+                ● Idle
+            </span>
+
+        </div>
+
+    </div>
+
+    <div class="toolbar">
+
+        <select id="interface">
+
+            <option value="Wi-Fi">Wi-Fi</option>
+
+            <option value="Ethernet">Ethernet</option>
+
+            <option value="Loopback">Loopback</option>
+
+        </select>
+
+        <button id="start-btn">
+
+            ▶ Start Capture
+
+        </button>
+
+        <button id="stop-btn">
+
+            ■ Stop
+
+        </button>
+
+        <button id="clear-btn">
+
+            🗑 Clear
+
+        </button>
+
+        <button id="export-btn">
+
+            ⬇ Export
+
+        </button>
+
+        <input
+
+            type="text"
+
+            id="search"
+
+            placeholder="Search IP / Port / Protocol"
+
+        >
+
+        <select id="protocol-filter">
+
+            <option value="ALL">All</option>
+
+            <option value="TCP">TCP</option>
+
+            <option value="UDP">UDP</option>
+
+            <option value="ICMP">ICMP</option>
+
+            <option value="DNS">DNS</option>
+
+            <option value="HTTP">HTTP</option>
+
+            <option value="HTTPS">HTTPS</option>
+
+            <option value="ARP">ARP</option>
+
+        </select>
+
+    </div>
+
+    <div class="statistics">
+
+        <div class="stat-card">
+
+            <h3>Total Packets</h3>
+
+            <h2 id="packet-count">0</h2>
+
+        </div>
+
+        <div class="stat-card">
+
+            <h3>TCP</h3>
+
+            <h2 id="tcp-count">0</h2>
+
+        </div>
+
+        <div class="stat-card">
+
+            <h3>UDP</h3>
+
+            <h2 id="udp-count">0</h2>
+
+        </div>
+
+        <div class="stat-card">
+
+            <h3>Bandwidth</h3>
+
+            <h2 id="speed">0 KB/s</h2>
+
+        </div>
+
+    </div>
+
+    <div class="packet-table-container">
+
+        <table id="packet-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Time</th>
+
+                    <th>Source</th>
+
+                    <th>Destination</th>
+
+                    <th>Protocol</th>
+
+                    <th>Port</th>
+
+                    <th>Length</th>
+
+                    <th>Information</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="packet-body">
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <div class="bottom-grid">
+
+        <div class="details-panel">
+
+            <h3>Packet Details</h3>
+
+            <pre id="packet-details">
+
+Select a packet to view its details.
+
+            </pre>
+
+        </div>
+
+        <div class="hex-panel">
+
+            <h3>Hex Viewer</h3>
+
+            <pre id="hex-viewer">
+
+Waiting for packet...
+
+            </pre>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/packet_sniffer.js') }}"></script>
+
+</body>
+
+</html>

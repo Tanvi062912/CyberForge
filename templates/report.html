@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CyberForge | Security Reports</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body style="background:#050816; color:white; padding:40px; font-family:sans-serif;">
+    <h1 style="color:#00ff99;">SOC Report Generator</h1>
+    <p>Logged as: {{ username }}</p>
+    <a href="/generate_report" style="background:#00ff99; color:black; padding:10px 20px; text-decoration:none; font-weight:bold; border-radius:4px; display:inline-block; margin-top:15px;">Compile & Download CSV Report</a>
+    <br><br><br><a href="/dashboard" style="color:#00ff99; text-decoration:none;">← Back to Dashboard</a>
+</body>
+</html>

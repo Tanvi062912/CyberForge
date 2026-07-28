@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberForge - AI Mentor Mode</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+    <style>
+        :root {
+            --bg-deep: #050814;
+            --bg-card: #0b0f19;
+            --bg-sidebar: #020617;
+            --border-color: #1f2937;
+            --text-primary: #f3f4f6;
+            --text-muted: #9ca3af;
+            --cyan-glow: #00ff99;
+            --alert-red: #ff3366;
+            --warning-amber: #facc15;
+            --info-blue: #38bdf8;
+            --mentor-purple: #a855f7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR STYLING */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            flex-shrink: 0;
+            overflow-y: auto;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--cyan-glow);
+            margin-bottom: 30px;
+        }
+
+        .nav-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 25px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background-color: rgba(0, 255, 153, 0.08);
+            color: var(--cyan-glow);
+        }
+
+        .infra-section {
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+
+        .infra-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .infra-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--cyan-glow);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--cyan-glow);
+        }
+
+        /* MAIN CANVA */
+        .main-canvas {
+            flex-grow: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .canvas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .header-left h1 {
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .header-left p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* LAYOUT GRID */
+        .mentor-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 20px;
+        }
+
+        .panel-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-hint-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--mentor-purple) 0%, #8b5cf6 100%);
+            border: none;
+            color: white;
+            padding: 10px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover { opacity: 0.9; }
+
+        .btn.cyan {
+            background: linear-gradient(135deg, #00ff99 0%, #00cc77 100%);
+            color: black;
+        }
+
+        .form-control {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-control label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: bold;
+        }
+
+        .form-control textarea, .form-control select {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            color: white;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .form-control textarea:focus, .form-control select:focus {
+            outline: none;
+            border-color: var(--mentor-purple);
+        }
+
+        /* RECOMMENDATIONS */
+        .rec-item {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 12px;
+            font-size: 13px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .rec-item h4 {
+            color: var(--cyan-glow);
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar">
+        <div class="logo-area">
+            <i class="fa-solid fa-shield-halved"></i> CyberForge
+        </div>
+
+        <nav class="nav-group">
+            <a href="/dashboard" class="nav-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+            <a href="/hacker" class="nav-item"><i class="fa-solid fa-terminal"></i> Hacker Interface</a>
+            <a href="/victim" class="nav-item"><i class="fa-solid fa-desktop"></i> Victim Interface</a>
+            <a href="/labs/defensive" class="nav-item"><i class="fa-solid fa-flask"></i> Threat Lab Center</a>
+            <a href="/packet_sniffer" class="nav-item"><i class="fa-solid fa-network-wired"></i> Packet Sniffer</a>
+            <a href="/password_analyzer" class="nav-item"><i class="fa-solid fa-key"></i> Password Analyzer</a>
+            <a href="/ai_copilot" class="nav-item"><i class="fa-solid fa-robot"></i> AI Cyber Copilot</a>
+            <a href="/academy" class="nav-item"><i class="fa-solid fa-graduation-cap"></i> Cyber Defense Academy</a>
+            <a href="/report" class="nav-item"><i class="fa-solid fa-file-pdf"></i> Generate Report</a>
+            <a href="/awareness" class="nav-item"><i class="fa-solid fa-graduation-cap"></i> Cyber Safety Awareness</a>
+            
+            <!-- ADDONS -->
+            <a href="/scenario_engine" class="nav-item"><i class="fa-solid fa-gamepad"></i> Scenario Engine</a>
+            <a href="/gamification" class="nav-item"><i class="fa-solid fa-trophy"></i> Gamification</a>
+            <a href="/siem_center" class="nav-item"><i class="fa-solid fa-server"></i> SIEM Center</a>
+            <a href="/ai_mentor" class="nav-item active"><i class="fa-solid fa-graduation-cap"></i> AI Mentor Mode</a>
+            <a href="/report_center" class="nav-item"><i class="fa-solid fa-folder-open"></i> Report Center</a>
+            <a href="/logout" class="nav-item"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </nav>
+
+        <div class="infra-section">
+            <div class="infra-title">Infrastructure</div>
+            <div class="infra-item"><div class="status-dot"></div> Kali Linux</div>
+            <div class="infra-item"><div class="status-dot"></div> Metasploitable</div>
+            <div class="infra-item"><div class="status-dot"></div> Flask Server</div>
+            <div class="infra-item"><div class="status-dot"></div> SQLite Database</div>
+        </div>
+    </div>
+
+    <!-- MAIN WINDOW -->
+    <div class="main-canvas">
+        <div class="canvas-header">
+            <div class="header-left">
+                <h1>AI Mentor Workspace</h1>
+                <p>Request tactical hints, evaluate range findings, and generate simulated scenarios</p>
+            </div>
+        </div>
+
+        <div class="mentor-grid">
+            <!-- LEFT PANEL: HINTS & EVALUATION -->
+            <div class="panel-card">
+                <div class="panel-title"><i class="fa-solid fa-brain"></i> Interactive Clue & Findings Evaluator</div>
+                
+                <!-- PROGRESSIVE HINTS -->
+                <div>
+                    <h3 style="font-size:13px; text-transform:uppercase; margin-bottom:8px;">Progressive Hints Engine</h3>
+                    {% if active_scenario %}
+                        <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">
+                            Active Scenario: <strong style="color:var(--cyan-glow);">{{ active_scenario }}</strong> | Step: <strong>{{ active_step }}</strong>
+                        </p>
+                        <div class="btn-hint-group">
+                            <button class="btn" onclick="getHint(1)"><i class="fa-solid fa-lightbulb"></i> Clue Level 1</button>
+                            <button class="btn" onclick="getHint(2)"><i class="fa-solid fa-magnifying-glass"></i> Clue Level 2</button>
+                            <button class="btn" onclick="getHint(3)"><i class="fa-solid fa-route"></i> Clue Level 3</button>
+                        </div>
+                        <div id="hint-display" style="margin-top:12px; background:rgba(168, 85, 247, 0.05); border: 1px dashed var(--mentor-purple); border-radius:5px; padding:12px; font-size:13px; display:none;"></div>
+                    {% else %}
+                        <p style="font-size:12px; color:var(--text-muted);">No active scenario running. Start a range scenario to unlock progressive hint streams.</p>
+                    {% endif %}
+                </div>
+
+                <!-- EVALUATOR FORM -->
+                <div style="border-top:1px solid var(--border-color); padding-top:15px;">
+                    <h3 style="font-size:13px; text-transform:uppercase; margin-bottom:12px; color:var(--cyan-glow);">Findings Evaluator</h3>
+                    {% if active_scenario %}
+                        <div style="display:flex; flex-direction:column; gap:12px;">
+                            <div class="form-control">
+                                <label>Write Your Investigation Findings</label>
+                                <textarea id="findings-text" rows="5" placeholder="Specify files, source domains, and beacon callback IPs found..."></textarea>
+                            </div>
+                            <button class="btn cyan" onclick="evaluateFindings()"><i class="fa-solid fa-circle-check"></i> Evaluate Findings</button>
+                        </div>
+
+                        <!-- EVALUATION RESULT BOX -->
+                        <div id="eval-result" style="display:none; margin-top:15px; border:1px solid var(--border-color); border-radius:6px; background:rgba(0,0,0,0.2); padding:15px; font-size:13px; flex-direction:column; gap:8px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <strong style="font-size:14px; color:var(--cyan-glow);">Evaluation Score</strong>
+                                <span id="eval-score" style="font-family:monospace; font-weight:bold; font-size:24px; color:var(--warning-amber);">0%</span>
+                            </div>
+                            <div>
+                                <strong style="font-size:11px; text-transform:uppercase; color:var(--text-muted);">Accuracy Feedback</strong>
+                                <p id="eval-accuracy" style="margin-top:2px;"></p>
+                            </div>
+                            <div>
+                                <strong style="font-size:11px; text-transform:uppercase; color:var(--text-muted);">Completeness Review</strong>
+                                <p id="eval-completeness" style="margin-top:2px;"></p>
+                            </div>
+                            <div>
+                                <strong style="font-size:11px; text-transform:uppercase; color:var(--text-muted);">Learning Recommendation</strong>
+                                <p id="eval-recs" style="margin-top:2px; color:var(--info-blue);"></p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p style="font-size:12px; color:var(--text-muted);">No active scenario running to submit findings for.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: GENERATOR & RECOMMENDATIONS -->
+            <div class="panel-card">
+                <div class="panel-title"><i class="fa-solid fa-compass"></i> AI Custom Generator & Recommendations</div>
+                
+                <!-- SCENARIO GENERATOR -->
+                <div>
+                    <h3 style="font-size:13px; text-transform:uppercase; margin-bottom:10px;">Scenario Generator</h3>
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                        <div class="form-control">
+                            <label>Attack Scenario Vector</label>
+                            <select id="scenario-type">
+                                <option value="phishing">Phishing Campaign</option>
+                                <option value="malware">Malware Persistence</option>
+                                <option value="insider_threat">Insider Threat Exfiltration</option>
+                                <option value="web_attack">Web Application Attack</option>
+                                <option value="network_intrusion">IDS Network Intrusion</option>
+                            </select>
+                        </div>
+                        <button class="btn" onclick="generateScenario()"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate AI Incident</button>
+                    </div>
+
+                    <!-- SCENARIO GENERATION RESPONSE -->
+                    <div id="gen-result" style="display:none; margin-top:15px; border:1px dashed var(--border-color); border-radius:6px; background:rgba(255,255,255,0.01); padding:15px; font-size:13px; flex-direction:column; gap:8px;">
+                        <h4 id="gen-name" style="color:var(--cyan-glow); font-size:14px; font-weight:bold;"></h4>
+                        <div style="font-size:11px; color:var(--text-muted);">Difficulty: <span id="gen-diff" style="font-weight:bold; color:var(--warning-amber);"></span></div>
+                        <div>
+                            <strong>Objectives:</strong>
+                            <p id="gen-obj" style="color:var(--text-muted); font-size:12px; margin-top:2px;"></p>
+                        </div>
+                        <div>
+                            <strong>Attack Chain:</strong>
+                            <p id="gen-chain" style="color:var(--text-muted); font-size:12px; margin-top:2px; font-family:monospace;"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LEARNING RECOMMENDATIONS -->
+                <div style="border-top:1px solid var(--border-color); padding-top:15px;">
+                    <h3 style="font-size:13px; text-transform:uppercase; margin-bottom:12px;">Analyst Learning Path Suggestions</h3>
+                    <div style="display:flex; flex-direction:column; gap:10px;" id="recs-list">
+                        <!-- Fetched dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function getHint(level) {
+            const res = await fetch("/api/mentor/hint", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ level })
+            });
+            const data = await res.json();
+            if (data.status === "success") {
+                const box = document.getElementById("hint-display");
+                box.style.display = "block";
+                box.innerHTML = `<strong>Hint Level ${level}:</strong><p style="margin-top:4px;">${data.hint}</p>`;
+            } else {
+                alert(data.message);
+            }
+        }
+
+        async function evaluateFindings() {
+            const findings = document.getElementById("findings-text").value;
+            if (!findings.trim()) {
+                alert("Please type your findings details before submitting.");
+                return;
+            }
+
+            const res = await fetch("/api/mentor/evaluate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ findings })
+            });
+            const data = await res.json();
+            if (data.status === "success") {
+                document.getElementById("eval-result").style.display = "flex";
+                document.getElementById("eval-score").innerText = `${data.score}%`;
+                document.getElementById("eval-accuracy").innerText = data.accuracy_feedback;
+                document.getElementById("eval-completeness").innerText = data.completeness_feedback;
+                document.getElementById("eval-recs").innerText = data.recommendations;
+                fetchRecommendations();
+            } else {
+                alert(data.message);
+            }
+        }
+
+        async function generateScenario() {
+            const type = document.getElementById("scenario-type").value;
+            const res = await fetch("/api/mentor/generate_scenario", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ type })
+            });
+            const data = await res.json();
+            if (data.status === "success") {
+                const sc = data.scenario;
+                document.getElementById("gen-result").style.display = "flex";
+                document.getElementById("gen-name").innerText = sc.name;
+                document.getElementById("gen-diff").innerText = sc.difficulty;
+                document.getElementById("gen-obj").innerText = sc.objectives;
+                document.getElementById("gen-chain").innerText = sc.attack_chain;
+            } else {
+                alert("Failed to generate scenario.");
+            }
+        }
+
+        async function fetchRecommendations() {
+            const res = await fetch("/api/mentor/recommendations");
+            const data = await res.json();
+            if (data.status === "success") {
+                const box = document.getElementById("recs-list");
+                box.innerHTML = "";
+                if (data.recommendations.length === 0) {
+                    box.innerHTML = "<p style='color:var(--text-muted); font-size:12px;'>You have completed all standard academy lessons! Great job.</p>";
+                } else {
+                    data.recommendations.forEach(r => {
+                        const item = document.createElement("div");
+                        item.className = "rec-item";
+                        item.innerHTML = `
+                            <h4>${r.title}</h4>
+                            <p style="color:var(--text-muted); font-size:11px; margin-top:2px;">${r.recommendation}</p>
+                            <div style="margin-top:6px;"><a href="/academy" style="color:var(--cyan-glow); text-decoration:none; font-weight:bold; font-size:11px;">Start Lesson (+${r.xp} XP) →</a></div>
+                        `;
+                        box.appendChild(item);
+                    });
+                }
+            }
+        }
+
+        // Initialize learning path on load
+        fetchRecommendations();
+    </script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+    "python.analysis.exclude": [
+        "**/__pyrefly_virtual__/**",
+        "c:/__pyrefly_virtual__/**"
+    ],
+    "python.linting.ignorePatterns": [
+        "**/__pyrefly_virtual__/**",
+        "c:/__pyrefly_virtual__/**"
+    ],
+    "git.ignoreLimitWarning": true
+}

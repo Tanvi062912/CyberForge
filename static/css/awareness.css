@@ -1,0 +1,147 @@
+/* ===========================================
+   CYBERFORGE CYBER SAFETY AWARENESS STYLING
+   =========================================== */
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: #050816;
+    color: #e5e7eb;
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+header {
+    background-color: #101827;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    border-bottom: 1px solid #1e293b;
+}
+
+header h1 {
+    color: #00ff99;
+    margin: 0;
+}
+
+header p {
+    color: #94a3b8;
+    margin-top: 5px;
+}
+
+.awareness-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+section {
+    background-color: #101827;
+    margin: 20px 0;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #1e293b;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+h2 {
+    color: #00ff99;
+    margin-top: 0;
+}
+
+ul li {
+    margin: 10px 0;
+    color: #d1d5db;
+}
+
+input[type="password"] {
+    width: 65%;
+    padding: 12px;
+    background: #0f172a;
+    color: white;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    outline: none;
+}
+
+input[type="password"]:focus {
+    border-color: #00ff99;
+}
+
+button {
+    padding: 12px 20px;
+    background: #00ff99;
+    color: black;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    background: #00cc7a;
+}
+
+.btn-danger {
+    background: #ff3b3b;
+    color: white;
+    margin-right: 10px;
+}
+
+.btn-danger:hover {
+    background: #d62828;
+}
+
+.toggle-container {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.btn-toggle {
+    background: #1e293b;
+    color: #00ff99;
+    border: 1px solid #334155;
+}
+
+/* ===========================================
+   LIGHT MODE OVERRIDE CLASS (FOR TOGGLING)
+   =========================================== */
+.light-mode {
+    background-color: #f4f4f4 !important;
+    color: #111827 !important;
+}
+
+.light-mode header {
+    background-color: #1e3a8a !important;
+    color: white !important;
+}
+
+.light-mode header h1 {
+    color: white !important;
+}
+
+.light-mode section {
+    background-color: white !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+.light-mode h2 {
+    color: #1e3a8a !important;
+}
+
+.light-mode ul li, .light-mode p {
+    color: #374151 !important;
+}
+
+.light-mode input[type="password"] {
+    background: white !important;
+    color: black !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+.light-mode button {
+    background: #1e3a8a !important;
+    color: white !important;
+}

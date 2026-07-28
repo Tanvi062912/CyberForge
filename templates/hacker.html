@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CyberForge Framework v3.0 - Live Shell & Attack Board</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.7.2/dist/socket.io.min.js"></script>
+    <style>
+        body {
+            background-color: #050814;
+            color: #00ff99;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .split-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .terminal-window {
+            background-color: #000000;
+            border: 1px solid #1f2937;
+            border-radius: 6px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+
+        .terminal-header {
+            background-color: #111827;
+            padding: 10px 15px;
+            border-bottom: 1px solid #1f2937;
+            font-size: 14px;
+            color: #9ca3af;
+            margin: -15px -15px 15px -15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .terminal-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .terminal-select {
+            background-color: #1f2937;
+            color: #00ff99;
+            border: 1px solid #374151;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-family: 'Courier New', Courier, monospace;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .terminal-select option {
+            background-color: #111827;
+            color: #00ff99;
+        }
+
+        .ssh-config-panel {
+            background-color: #111827;
+            border-bottom: 1px solid #1f2937;
+            padding: 15px;
+            margin: -15px -15px 15px -15px;
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)) auto;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .ssh-field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .ssh-field-group label {
+            font-size: 11px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .ssh-input {
+            background-color: #050814;
+            border: 1px solid #374151;
+            color: #00ff99;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            outline: none;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .ssh-input:focus {
+            border-color: #00ff99;
+            box-shadow: 0 0 5px rgba(0, 255, 153, 0.3);
+        }
+
+        .ssh-btn {
+            background-color: #00ff99;
+            color: #050814;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            height: 31px;
+        }
+
+        .ssh-btn:hover {
+            background-color: #00cc7a;
+        }
+
+        #terminal-container {
+            flex-grow: 1;
+            height: 100%;
+        }
+
+        .exploit-panel {
+            background-color: #000000;
+            border: 1px solid #1f2937;
+            border-radius: 6px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: 600px;
+            box-sizing: border-box;
+        }
+
+        .panel-header {
+            background-color: #111827;
+            padding: 10px 15px;
+            border-bottom: 1px solid #1f2937;
+            font-size: 14px;
+            color: #9ca3af;
+            margin: -15px -15px 0 -15px;
+            font-weight: bold;
+            letter-spacing: 0.05em;
+        }
+
+        .exploit-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .macro-btn {
+            background-color: #0c1020;
+            border: 1px solid #1f2937;
+            color: #00ff99;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .macro-btn:hover {
+            border-color: #00ff99;
+            background-color: rgba(0, 255, 153, 0.05);
+            box-shadow: 0 0 8px rgba(0, 255, 153, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .macro-btn i {
+            font-size: 16px;
+        }
+
+        .btn-exfil {
+            color: #38bdf8;
+        }
+
+        .btn-exfil:hover {
+            border-color: #38bdf8;
+            background-color: rgba(56, 189, 248, 0.05);
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.2);
+        }
+
+        .btn-malware {
+            color: #facc15;
+        }
+
+        .btn-malware:hover {
+            border-color: #facc15;
+            background-color: rgba(250, 204, 21, 0.05);
+            box-shadow: 0 0 8px rgba(250, 204, 21, 0.2);
+        }
+
+        .btn-deface {
+            color: #f472b6;
+        }
+
+        .btn-deface:hover {
+            border-color: #f472b6;
+            background-color: rgba(244, 114, 182, 0.05);
+            box-shadow: 0 0 8px rgba(244, 114, 182, 0.2);
+        }
+
+        .btn-phish {
+            color: #a78bfa;
+        }
+
+        .btn-phish:hover {
+            border-color: #a78bfa;
+            background-color: rgba(167, 139, 250, 0.05);
+            box-shadow: 0 0 8px rgba(167, 139, 250, 0.2);
+        }
+
+        .btn-ransom {
+            color: #ff3366;
+        }
+
+        .btn-ransom:hover {
+            border-color: #ff3366;
+            background-color: rgba(255, 51, 102, 0.05);
+            box-shadow: 0 0 8px rgba(255, 51, 102, 0.2);
+        }
+
+        .btn-priv {
+            color: #fb923c;
+        }
+
+        .btn-priv:hover {
+            border-color: #fb923c;
+            background-color: rgba(251, 146, 60, 0.05);
+            box-shadow: 0 0 8px rgba(251, 146, 60, 0.2);
+        }
+
+        .reset-btn {
+            background-color: #ff3366;
+            color: #ffffff;
+            border: 1px solid transparent;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .reset-btn:hover {
+            background-color: #e11d48;
+            box-shadow: 0 0 10px rgba(255, 51, 102, 0.4);
+        }
+
+        .file-explorer-container {
+            border: 1px solid #1f2937;
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .explorer-header {
+            background-color: #111827;
+            border-bottom: 1px solid #1f2937;
+            color: #9ca3af;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .file-list {
+            background-color: #050814;
+            padding: 12px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-grow: 1;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #e5e7eb;
+            background: #111827;
+            padding: 6px 12px;
+            border-radius: 4px;
+            border-left: 3px solid #00ff99;
+        }
+
+        .file-item.locked {
+            border-left-color: #ff3366;
+            color: #ff3366;
+        }
+
+        .file-item.backdoor {
+            border-left-color: #facc15;
+            color: #facc15;
+        }
+
+        .file-item .file-actions i {
+            cursor: pointer;
+            color: #9ca3af;
+            transition: color 0.15s;
+        }
+
+        .file-item .file-actions i:hover {
+            color: #ff3366;
+        }
+
+        .nav-links {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .nav-links a {
+            color: #00ff99;
+            margin: 0 10px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="nav-links">
+        <a href="/dashboard">📊 Dashboard</a> |
+        <a href="/victim">🖥️ Victim Workspace</a>
+    </div>
+
+    <div class="split-container">
+        <!-- LEFT COLUMN: INTERACTIVE TERMINAL -->
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div>📟 CyberForge Interactive Terminal Node - Session Active: {{ username }}</div>
+                <div class="terminal-controls">
+                    <label for="shell-type" style="color: #9ca3af; font-size: 13px;">Engine:</label>
+                    <select id="shell-type" class="terminal-select">
+                        <option value="sandbox" selected>Sandbox Terminal (Mock)</option>
+                        <!-- <option value="local">Local CMD / Bash</option> -->
+                        <option value="wsl">Kali Linux (WSL)</option>
+                        <option value="ssh">Remote Kali (SSH)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="ssh-panel" class="ssh-config-panel">
+                <div class="ssh-field-group">
+                    <label>SSH Host</label>
+                    <input type="text" id="ssh-host" placeholder="192.168.1.100" class="ssh-input">
+                </div>
+                <div class="ssh-field-group" style="max-width: 80px;">
+                    <label>Port</label>
+                    <input type="number" id="ssh-port" value="22" class="ssh-input">
+                </div>
+                <div class="ssh-field-group">
+                    <label>Username</label>
+                    <input type="text" id="ssh-user" value="kali" class="ssh-input">
+                </div>
+                <div class="ssh-field-group">
+                    <label>Password</label>
+                    <input type="password" id="ssh-pass" placeholder="••••••••" class="ssh-input">
+                </div>
+                <div class="ssh-field-group">
+                    <button id="ssh-connect-btn" class="ssh-btn">Connect</button>
+                </div>
+            </div>
+
+            <div id="terminal-container"></div>
+        </div>
+
+        <!-- RIGHT COLUMN: MACRO ATTACK CONTROLS & REMOTE FILE EXPLORER -->
+        <div class="exploit-panel">
+            <div class="panel-header">⚡ CyberForge Attack Macro Suite</div>
+            <div class="exploit-grid">
+                <button class="macro-btn btn-exfil" onclick="triggerExploit('exfiltration')">
+                    <i class="fa-solid fa-file-export"></i> Data Exfiltration
+                </button>
+                <button class="macro-btn btn-malware" onclick="triggerExploit('malware')">
+                    <i class="fa-solid fa-bug"></i> Install Backdoor
+                </button>
+                <button class="macro-btn btn-deface" onclick="triggerExploit('defacement')">
+                    <i class="fa-solid fa-face-angry"></i> SEO Defacement
+                </button>
+                <button class="macro-btn btn-phish" onclick="triggerExploit('phishing')">
+                    <i class="fa-solid fa-mask"></i> Phishing Kit
+                </button>
+                <button class="macro-btn btn-ransom" onclick="triggerExploit('ransomware')">
+                    <i class="fa-solid fa-lock"></i> Ransomware Cryptolock
+                </button>
+                <button class="macro-btn btn-priv" onclick="triggerExploit('privilege_escalation')">
+                    <i class="fa-solid fa-shield-cat"></i> Privilege Escalation
+                </button>
+            </div>
+            <button class="reset-btn" onclick="triggerExploit('reset')">
+                <i class="fa-solid fa-arrows-rotate"></i> Reset Lab State
+            </button>
+
+            <div class="file-explorer-container">
+                <div class="explorer-header">📂 Remote Target File System (victim_storage)</div>
+                <div id="file-list" class="file-list">
+                    <!-- Dynamically populated files -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+
+        const term = new Terminal({
+            cursorBlink: true,
+            theme: {
+                background: '#000000',
+                foreground: '#00ff99',
+                cursor: '#ff3366'
+            },
+            fontFamily: 'Courier New, monospace',
+            fontSize: 15
+        });
+
+        term.open(document.getElementById('terminal-container'));
+
+        let activeEngine = "sandbox";
+        let currentLine = "";
+        const prompt = "cyberforge@sandbox-victim:~$ ";
+
+        function resetTerminalWelcome() {
+            term.write('\r\x1b[2K');
+            term.clear();
+            if (activeEngine === "sandbox") {
+                term.writeln('==================================================');
+                term.writeln('🤖 CYBERFORGE INTERACTIVE SANDBOX TERM ONLINE');
+                term.writeln('==================================================');
+                term.writeln('Type "help" to list available sandbox commands.\r\n');
+                term.write(prompt);
+            } else {
+                term.writeln('==================================================');
+                term.writeln('🚀 CYBERFORGE STREAM TELEMETRY NODE CONNECTED');
+                term.writeln('==================================================\r\n');
+            }
+        }
+
+        resetTerminalWelcome();
+
+        socket.on("terminal_output", function (data) {
+            if (activeEngine !== "sandbox") {
+                term.write(data.output);
+            }
+        });
+
+        term.onData(data => {
+            if (activeEngine !== "sandbox") {
+                socket.emit("terminal_input", { input: data });
+            } else {
+                for (let i = 0; i < data.length; i++) {
+                    const char = data[i];
+                    if (char === "\r") {
+                        term.write("\r\n");
+                        handleCommand(currentLine);
+                        currentLine = "";
+                    } else if (char === "\x7F" || char === "\b") {
+                        if (currentLine.length > 0) {
+                            currentLine = currentLine.slice(0, -1);
+                            term.write("\b \b");
+                        }
+                    } else {
+                        if (char.charCodeAt(0) >= 32 && char.charCodeAt(0) <= 126) {
+                            currentLine += char;
+                            term.write(char);
+                        }
+                    }
+                }
+            }
+        });
+
+        async function handleCommand(line) {
+            const trimmed = line.trim();
+            const parts = trimmed.split(/\s+/);
+            const cmd = parts[0].toLowerCase();
+            const args = parts.slice(1);
+
+            if (cmd === "") {
+                term.write(prompt);
+                return;
+            }
+
+            const blockedKeywords = ["sudo", "format", "c:"];
+            let isBlocked = false;
+            for (const kw of blockedKeywords) {
+                if (trimmed.toLowerCase().includes(kw)) {
+                    isBlocked = true;
+                    break;
+                }
+            }
+            if (isBlocked) {
+                term.writeln("\r\n\x1b[1;31m[❌ CRITICAL ACCESS DENIED] Unauthorized native command sequence detected.\x1b[0m");
+                term.writeln("\x1b[1;31mHost protection firewall intercepted execution request.\x1b[0m\r\n");
+                term.write(prompt);
+                return;
+            }
+
+            if (cmd === "help") {
+                term.writeln("Available Sandbox Commands:");
+                term.writeln("  help             Display this guide");
+                term.writeln("  clear            Clear screen");
+                term.writeln("  ls               List files inside database/victim_storage");
+                term.writeln("  rm <filename>    Delete a specific target file");
+                term.writeln("");
+            } else if (cmd === "clear") {
+                term.clear();
+            } else if (cmd === "ls") {
+                try {
+                    const res = await fetch("/api/lab/files");
+                    const data = await res.json();
+                    if (data && data.files) {
+                        if (data.files.length === 0) {
+                            term.writeln("(Directory is empty)");
+                        } else {
+                            data.files.forEach(f => {
+                                if (f.endsWith(".locked")) {
+                                    term.writeln(`\x1b[1;31m${f}\x1b[0m`);
+                                } else if (f.includes("backdoor")) {
+                                    term.writeln(`\x1b[1;33m${f}\x1b[0m`);
+                                } else {
+                                    term.writeln(`\x1b[1;32m${f}\x1b[0m`);
+                                }
+                            });
+                        }
+                    } else {
+                        term.writeln("Failed to fetch file list.");
+                    }
+                } catch (e) {
+                    term.writeln("Error retrieving target file system: " + e.message);
+                }
+                term.writeln("");
+            } else if (cmd === "rm") {
+                if (args.length === 0) {
+                    term.writeln("Usage: rm <filename>");
+                } else {
+                    const filename = args[0];
+                    try {
+                        const res = await fetch("/api/lab/execute_exploit", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ vector: "rm", filename: filename })
+                        });
+                        const result = await res.json();
+                        if (result.status === "success") {
+                            term.writeln(`File '${filename}' deleted.`);
+                            refreshTargetFiles();
+                        } else {
+                            term.writeln(`Error deleting file: ${result.message}`);
+                        }
+                    } catch (e) {
+                        term.writeln(`Failed to execute deletion command: ${e.message}`);
+                    }
+                }
+                term.writeln("");
+            } else {
+                term.writeln(`Command not found: ${cmd}. Type 'help' for instructions.`);
+            }
+            term.write(prompt);
+        }
+
+        const shellTypeSelect = document.getElementById("shell-type");
+        const sshPanel = document.getElementById("ssh-panel");
+        const sshConnectBtn = document.getElementById("ssh-connect-btn");
+
+        shellTypeSelect.addEventListener("change", function () {
+            const selected = this.value;
+            activeEngine = selected;
+            if (selected === "ssh") {
+                sshPanel.style.display = "grid";
+            } else {
+                sshPanel.style.display = "none";
+                resetTerminalWelcome();
+                if (selected !== "sandbox") {
+                    socket.emit("select_shell", { type: selected });
+                }
+            }
+        });
+
+        sshConnectBtn.addEventListener("click", function () {
+            const host = document.getElementById("ssh-host").value.trim();
+            const port = document.getElementById("ssh-port").value.trim() || "22";
+            const username = document.getElementById("ssh-user").value.trim() || "kali";
+            const password = document.getElementById("ssh-pass").value;
+
+            if (!host) {
+                alert("Please specify SSH host address.");
+                return;
+            }
+
+            term.clear();
+            term.writeln(`==================================================`);
+            term.writeln(`🌐 CONNECTING TO SSH REMOTE VM: ${host}`);
+            term.writeln(`==================================================\r\n`);
+
+            socket.emit("select_shell", {
+                type: "ssh",
+                ssh: {
+                    host: host,
+                    port: port,
+                    username: username,
+                    password: password
+                }
+            });
+        });
+
+        async function refreshTargetFiles() {
+            const listContainer = document.getElementById("file-list");
+            if (!listContainer) return;
+
+            try {
+                const res = await fetch("/api/lab/files");
+                const data = await res.json();
+
+                if (data && data.files) {
+                    listContainer.innerHTML = "";
+                    if (data.files.length === 0) {
+                        listContainer.innerHTML = '<div style="color: #6b7280; font-style: italic; font-size: 12px; text-align: center; padding: 10px;">Directory empty</div>';
+                    } else {
+                        data.files.forEach(f => {
+                            let itemClass = "file-item";
+                            let icon = "fa-solid fa-file-code";
+                            if (f.endsWith(".locked")) {
+                                itemClass += " locked";
+                                icon = "fa-solid fa-file-shield";
+                            } else if (f.includes("backdoor")) {
+                                itemClass += " backdoor";
+                                icon = "fa-solid fa-bug";
+                            } else if (f.endsWith(".csv")) {
+                                icon = "fa-solid fa-file-csv";
+                            } else if (f.endsWith(".txt")) {
+                                icon = "fa-solid fa-file-lines";
+                            }
+
+                            listContainer.innerHTML += `
+                                <div class="${itemClass}">
+                                    <div><i class="${icon}"></i> ${f}</div>
+                                    <div class="file-actions">
+                                        <i class="fa-solid fa-trash" onclick="deleteFile('${f}')" title="Delete File"></i>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to fetch files:", e);
+            }
+        }
+
+        async function deleteFile(filename) {
+            if (confirm(`Are you sure you want to delete ${filename}?`)) {
+                try {
+                    const res = await fetch("/api/lab/execute_exploit", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ vector: "rm", filename: filename })
+                    });
+                    const result = await res.json();
+                    if (result.status === "success") {
+                        if (activeEngine === "sandbox") {
+                            term.write("\r\n");
+                            term.writeln(`File '${filename}' deleted via Explorer trigger.`);
+                            term.write(prompt);
+                        }
+                        refreshTargetFiles();
+                    } else {
+                        alert(`Error deleting file: ${result.message}`);
+                    }
+                } catch (e) {
+                    alert(`Failed to delete file: ${e.message}`);
+                }
+            }
+        }
+
+        async function triggerExploit(vector) {
+            try {
+                const res = await fetch("/api/lab/execute_exploit", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ vector: vector })
+                });
+                const result = await res.json();
+                if (result.status === "success") {
+                    if (activeEngine === "sandbox") {
+                        term.write("\r\n");
+                        if (vector === "reset") {
+                            term.writeln("\x1b[1;33m[SYSTEM STATE] Simulated laboratory environment successfully reset.\x1b[0m");
+                        } else {
+                            term.writeln(`\x1b[1;32m[EXPLOIT TRIGGER] Executed exploit vector: ${vector.toUpperCase()}\x1b[0m`);
+                        }
+                        term.write(prompt);
+                    }
+                    refreshTargetFiles();
+                } else {
+                    alert(`Exploit execution failed: ${result.message}`);
+                }
+            } catch (e) {
+                alert(`Network error running exploit: ${e.message}`);
+            }
+        }
+
+        refreshTargetFiles();
+        setInterval(refreshTargetFiles, 3000);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberForge - Report Center</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+    <style>
+        :root {
+            --bg-deep: #050814;
+            --bg-card: #0b0f19;
+            --bg-sidebar: #020617;
+            --border-color: #1f2937;
+            --text-primary: #f3f4f6;
+            --text-muted: #9ca3af;
+            --cyan-glow: #00ff99;
+            --alert-red: #ff3366;
+            --warning-amber: #facc15;
+            --info-blue: #38bdf8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR STYLING */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            flex-shrink: 0;
+            overflow-y: auto;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--cyan-glow);
+            margin-bottom: 30px;
+        }
+
+        .nav-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 25px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background-color: rgba(0, 255, 153, 0.08);
+            color: var(--cyan-glow);
+        }
+
+        .infra-section {
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+
+        .infra-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .infra-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--cyan-glow);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--cyan-glow);
+        }
+
+        /* MAIN CANVA */
+        .main-canvas {
+            flex-grow: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .canvas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .header-left h1 {
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .header-left p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* LAYOUT GRID */
+        .report-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 20px;
+        }
+
+        .panel-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-control {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-control label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: bold;
+        }
+
+        .form-control input, .form-control select {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            color: white;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .form-control input:focus, .form-control select:focus {
+            outline: none;
+            border-color: var(--cyan-glow);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #00ff99 0%, #00cc77 100%);
+            border: none;
+            color: #000;
+            padding: 10px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .btn:hover { opacity: 0.9; }
+
+        /* ARCHIVE TABLE */
+        .archive-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .archive-table th, .archive-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .archive-table th {
+            color: var(--text-muted);
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 11px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .format-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .format-badge.pdf { background: rgba(255, 51, 102, 0.2); color: var(--alert-red); }
+        .format-badge.html { background: rgba(56, 189, 248, 0.2); color: var(--info-blue); }
+        .format-badge.json { background: rgba(250, 204, 21, 0.2); color: var(--warning-amber); }
+
+        .action-link {
+            color: var(--cyan-glow);
+            text-decoration: none;
+            font-weight: bold;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        .action-link.delete {
+            color: var(--alert-red);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar">
+        <div class="logo-area">
+            <i class="fa-solid fa-shield-halved"></i> CyberForge
+        </div>
+
+        <nav class="nav-group">
+            <a href="/dashboard" class="nav-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+            <a href="/hacker" class="nav-item"><i class="fa-solid fa-terminal"></i> Hacker Interface</a>
+            <a href="/victim" class="nav-item"><i class="fa-solid fa-desktop"></i> Victim Interface</a>
+            <a href="/labs/defensive" class="nav-item"><i class="fa-solid fa-flask"></i> Threat Lab Center</a>
+            <a href="/packet_sniffer" class="nav-item"><i class="fa-solid fa-network-wired"></i> Packet Sniffer</a>
+            <a href="/password_analyzer" class="nav-item"><i class="fa-solid fa-key"></i> Password Analyzer</a>
+            <a href="/ai_copilot" class="nav-item"><i class="fa-solid fa-robot"></i> AI Cyber Copilot</a>
+            <a href="/academy" class="nav-item"><i class="fa-solid fa-graduation-cap"></i> Cyber Defense Academy</a>
+            <a href="/report" class="nav-item"><i class="fa-solid fa-file-pdf"></i> Generate Report</a>
+            <a href="/awareness" class="nav-item"><i class="fa-solid fa-graduation-cap"></i> Cyber Safety Awareness</a>
+            
+            <!-- ADDONS -->
+            <a href="/scenario_engine" class="nav-item"><i class="fa-solid fa-gamepad"></i> Scenario Engine</a>
+            <a href="/gamification" class="nav-item"><i class="fa-solid fa-trophy"></i> Gamification</a>
+            <a href="/siem_center" class="nav-item"><i class="fa-solid fa-server"></i> SIEM Center</a>
+            <a href="/ai_mentor" class="nav-item"><i class="fa-solid fa-graduation-cap"></i> AI Mentor Mode</a>
+            <a href="/report_center" class="nav-item active"><i class="fa-solid fa-folder-open"></i> Report Center</a>
+            <a href="/logout" class="nav-item"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </nav>
+
+        <div class="infra-section">
+            <div class="infra-title">Infrastructure</div>
+            <div class="infra-item"><div class="status-dot"></div> Kali Linux</div>
+            <div class="infra-item"><div class="status-dot"></div> Metasploitable</div>
+            <div class="infra-item"><div class="status-dot"></div> Flask Server</div>
+            <div class="infra-item"><div class="status-dot"></div> SQLite Database</div>
+        </div>
+    </div>
+
+    <!-- MAIN WINDOW -->
+    <div class="main-canvas">
+        <div class="canvas-header">
+            <div class="header-left">
+                <h1>Report Center</h1>
+                <p>Generate, export, and download comprehensive incident and performance reports</p>
+            </div>
+        </div>
+
+        <div class="report-grid">
+            <!-- LEFT PANEL: GENERATOR -->
+            <div class="panel-card">
+                <div class="panel-title"><i class="fa-solid fa-file-circle-plus"></i> Compile New Report</div>
+                
+                <div style="display:flex; flex-direction:column; gap:15px;">
+                    <div class="form-control">
+                        <label>Report Header Title</label>
+                        <input type="text" id="report-title" placeholder="e.g. Incident Audit Report Q3">
+                    </div>
+                    <div class="form-control">
+                        <label>Report Compilation Type</label>
+                        <select id="report-type">
+                            <option value="incident">Incident Response Report</option>
+                            <option value="investigation">Investigation Evidence Report</option>
+                            <option value="performance">Operator Performance Summary</option>
+                        </select>
+                    </div>
+                    <div class="form-control">
+                        <label>Document Export Format</label>
+                        <select id="report-format">
+                            <option value="pdf">Adobe PDF Document</option>
+                            <option value="html">HTML Web Page</option>
+                            <option value="json">Structured JSON Array</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="generateReport()"><i class="fa-solid fa-gears"></i> Compile & Save Report</button>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: ARCHIVE LIST -->
+            <div class="panel-card">
+                <div class="panel-title"><i class="fa-solid fa-archive"></i> Operator Report Archive</div>
+                
+                <div style="overflow-x:auto;">
+                    <table class="archive-table">
+                        <thead>
+                            <tr>
+                                <th>Report Title</th>
+                                <th>Type</th>
+                                <th>Format</th>
+                                <th>Generated At</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="archive-body">
+                            {% for r in reports %}
+                            <tr id="report-row-{{ r.id }}">
+                                <td>{{ r.title }}</td>
+                                <td style="text-transform:capitalize;">{{ r.report_type }}</td>
+                                <td><span class="format-badge {{ r.format }}">{{ r.format.upper() }}</span></td>
+                                <td>{{ r.created_at }}</td>
+                                <td style="text-align:right;">
+                                    <a href="/api/report_center/download/{{ r.id }}" class="action-link"><i class="fa-solid fa-download"></i> Get</a>
+                                    <span class="action-link delete" onclick="deleteReport('{{ r.id }}')"><i class="fa-solid fa-trash"></i> Delete</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% if reports|length == 0 %}
+                            <tr id="no-reports-row">
+                                <td colspan="5" style="text-align:center; color:var(--text-muted); padding:30px;">
+                                    No generated reports found in archive database.
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function generateReport() {
+            const title = document.getElementById("report-title").value.trim ? document.getElementById("report-title").value.trim() : document.getElementById("report-title").value;
+            const report_type = document.getElementById("report-type").value;
+            const format = document.getElementById("report-format").value;
+
+            if (!title) {
+                alert("Please specify a report header title.");
+                return;
+            }
+
+            const res = await fetch("/api/report_center/generate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title, report_type, format })
+            });
+            const data = await res.json();
+            alert(data.message);
+            if (data.status === "success") {
+                document.getElementById("report-title").value = "";
+                refreshArchive();
+            }
+        }
+
+        async function deleteReport(id) {
+            if (confirm("Are you sure you want to delete this report from the archive?")) {
+                const res = await fetch(`/api/report_center/delete/${id}`, {
+                    method: "POST"
+                });
+                const data = await res.json();
+                if (data.status === "success") {
+                    const row = document.getElementById(`report-row-${id}`);
+                    if (row) {
+                        row.remove();
+                    }
+                }
+            }
+        }
+
+        async function refreshArchive() {
+            const res = await fetch("/report_center");
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(await res.text(), 'text/html');
+            const newArchive = htmlDoc.getElementById("archive-body");
+            if (newArchive) {
+                document.getElementById("archive-body").innerHTML = newArchive.innerHTML;
+            }
+        }
+    </script>
+</body>
+</html>

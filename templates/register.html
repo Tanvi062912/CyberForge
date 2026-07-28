@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>CyberForge | Register</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/style.css') }}">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+</head>
+
+<body class="login-body">
+
+<div class="login-container">
+
+<div class="login-left">
+
+<h1>CYBERFORGE</h1>
+
+<h3>Create New Operator</h3>
+
+<p>
+
+Register yourself to access
+
+CyberForge Security Operations Center.
+
+</p>
+
+</div>
+
+<div class="login-right">
+
+<div class="login-card">
+
+<h2>
+
+<i class="fa-solid fa-user-plus"></i>
+
+Register
+
+</h2>
+
+<form action="/register_user" method="POST">
+
+<input
+
+type="text"
+
+name="username"
+
+placeholder="Username"
+
+required>
+
+<input
+
+type="email"
+
+name="email"
+
+placeholder="Email"
+
+required>
+
+<input
+
+type="password"
+
+name="password"
+
+placeholder="Password"
+
+required>
+
+<button type="submit">
+
+Register
+
+</button>
+
+</form>
+
+<br>
+
+<p>
+
+Already have an account?
+
+<a href="/">
+
+Login
+
+</a>
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+
+</html>

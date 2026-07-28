@@ -1,0 +1,1796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberForge Labs | Defensive Operations Intro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #050814;
+            --bg-card: #0b0f19;
+            --bg-sidebar: #020617;
+            --border-color: #1f2937;
+            --text-primary: #f3f4f6;
+            --text-muted: #9ca3af;
+            --cyan-glow: #38bdf8;
+            --green-glow: #10b981;
+            --red-glow: #ef4444;
+            --amber-glow: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            flex-shrink: 0;
+            overflow-y: auto;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--green-glow);
+            margin-bottom: 30px;
+        }
+
+        .nav-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 25px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background-color: rgba(16, 185, 129, 0.08);
+            color: var(--green-glow);
+        }
+
+        .infra-section {
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+
+        .infra-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .infra-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--green-glow);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--green-glow);
+        }
+
+        /* Workspace Grid Layout */
+        .workspace {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            height: 100vh;
+        }
+
+        /* Top HUD Bar */
+        .hud-header {
+            height: 65px;
+            background: #0f172a;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            z-index: 10;
+        }
+
+        .hud-title-area h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+
+        .hud-title-area p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .hud-meta-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .hud-stat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            padding: 6px 14px;
+            border-radius: 4px;
+        }
+
+        .hud-stat.timer i { color: var(--cyan-glow); }
+        .hud-stat.points i { color: var(--amber-glow); }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .progress-bar-bg {
+            width: 120px;
+            height: 8px;
+            background: #334155;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 45%;
+            background: var(--cyan-glow);
+            box-shadow: 0 0 8px var(--cyan-glow);
+            transition: width 0.4s ease;
+        }
+
+        .end-lab-btn {
+            background: var(--red-glow);
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .end-lab-btn:hover {
+            background: #dc2626;
+        }
+
+        /* Splitting Column Panes */
+        .panes-grid {
+            display: grid;
+            grid-template-columns: 34% 66%;
+            flex: 1;
+            height: calc(100vh - 65px);
+            overflow: hidden;
+        }
+
+        .pane-left {
+            background: #0f172a;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 25px;
+        }
+
+        .pane-right {
+            background: var(--bg-deep);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Left Pane Header & Selector Tabs */
+        .task-selector-bar {
+            display: flex;
+            gap: 5px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .task-tab {
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .task-tab:hover {
+            color: #fff;
+        }
+
+        .task-tab.active {
+            background: rgba(56, 189, 248, 0.1);
+            border-color: rgba(56, 189, 248, 0.3);
+            color: var(--cyan-glow);
+        }
+
+        .task-tab.completed {
+            color: var(--green-glow) !important;
+        }
+
+        /* Left Pane Objectives & Answers Forms */
+        .task-content-box {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .task-header h3 {
+            font-size: 20px;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .task-points-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--cyan-glow);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            background: rgba(56, 189, 248, 0.05);
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .task-desc {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-muted);
+        }
+
+        .scenario-btn {
+            background: #1e293b;
+            color: #fff;
+            border: 1px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            align-self: flex-start;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .scenario-btn:hover {
+            background: #334155;
+        }
+
+        .objectives-checklist {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 18px;
+        }
+
+        .objectives-checklist h4 {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            margin-bottom: 10px;
+            color: var(--text-muted);
+        }
+
+        .checklist-item.done {
+            color: var(--text-primary);
+        }
+
+        .checklist-item i {
+            font-size: 16px;
+        }
+        .checklist-item.done i {
+            color: var(--green-glow);
+        }
+
+        /* Answers Submission Fields */
+        .answers-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 20px;
+        }
+
+        .answers-form h4 {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #fff;
+        }
+
+        .answer-field-row {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .answer-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .answer-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .answer-input {
+            width: 100%;
+            background: #020617;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: #fff;
+            padding: 10px 40px 10px 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .answer-input:focus {
+            border-color: var(--cyan-glow);
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.15);
+        }
+
+        .validation-indicator {
+            position: absolute;
+            right: 15px;
+            font-size: 12px;
+            font-weight: 700;
+            display: none;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .validation-indicator.correct {
+            display: flex;
+            color: var(--green-glow);
+        }
+
+        .submit-final-btn {
+            background: #1e293b;
+            color: #475569;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: not-allowed;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+
+        .submit-final-btn.active {
+            background: var(--green-glow);
+            color: #020617;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .submit-final-btn.active:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        /* Success Alert Banner */
+        .flag-success-box {
+            display: none;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px dashed var(--green-glow);
+            border-radius: 6px;
+            padding: 18px;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        /* Right Pane Virtual Lab Environment Tabs */
+        .lab-environment-header {
+            height: 48px;
+            background: #0b0f19;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .environment-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--cyan-glow);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .environment-title span {
+            color: var(--green-glow);
+        }
+
+        .environment-tabs {
+            display: flex;
+            height: 100%;
+        }
+
+        .env-tab-btn {
+            height: 100%;
+            padding: 0 20px;
+            background: transparent;
+            border: none;
+            border-left: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.15s;
+        }
+
+        .env-tab-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .env-tab-btn.active {
+            color: var(--cyan-glow);
+            background: #020617;
+            border-bottom: 2px solid var(--cyan-glow);
+        }
+
+        .env-tab-content {
+            display: none;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .env-tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Network Topology SVG Panel */
+        .network-topology-pane {
+            flex: 1;
+            padding: 25px;
+            display: grid;
+            grid-template-rows: 1fr auto;
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        .network-top-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            position: relative;
+        }
+
+        .network-top-card h3 {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #fff;
+        }
+
+        .topology-svg-container {
+            flex: 1;
+            min-height: 260px;
+            background: #02040a;
+            border: 1px solid #111827;
+            border-radius: 6px;
+            position: relative;
+        }
+
+        .topology-svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .network-bottom-layout {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 20px;
+        }
+
+        .legend-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .legend-grid {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .legend-color-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .legend-color-dot.normal { background: var(--green-glow); box-shadow: 0 0 6px var(--green-glow); }
+        .legend-color-dot.suspicious { background: var(--red-glow); box-shadow: 0 0 6px var(--red-glow); }
+        .legend-color-dot.blocked { background: var(--amber-glow); box-shadow: 0 0 6px var(--amber-glow); }
+
+        .status-grid-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .status-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .metric-item {
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .metric-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 3px;
+        }
+
+        /* SIEM Log Analytics Panel */
+        .siem-analytics-pane {
+            flex: 1;
+            padding: 20px;
+            display: grid;
+            grid-template-rows: 1.3fr 1fr;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        .siem-table-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .siem-table-header {
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .siem-table-header h4 {
+            font-size: 13px;
+            color: #fff;
+        }
+
+        .siem-table-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .siem-control-btn {
+            background: #1e293b;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .siem-control-btn:hover {
+            color: #fff;
+        }
+
+        .siem-table-wrapper {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .siem-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            text-align: left;
+        }
+
+        .siem-table th {
+            position: sticky;
+            top: 0;
+            background: #0f172a;
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .siem-table td {
+            padding: 9px 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer;
+        }
+
+        .siem-table tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .siem-table tr.selected {
+            background: rgba(56, 189, 248, 0.08) !important;
+        }
+
+        .status-pill {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-pill.failed {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--red-glow);
+        }
+
+        .status-pill.success {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--green-glow);
+        }
+
+        /* SIEM Bottom details split */
+        .siem-bottom-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        .details-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .details-header {
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border-color);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .details-body {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+            background: #02040a;
+        }
+
+        .details-json {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--cyan-glow);
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+
+        .summary-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+        }
+
+        .severity-alert-bar {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-left: 4px solid var(--red-glow);
+            padding: 10px 15px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Tools Terminals Panel */
+        .tools-pane {
+            flex: 1;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        .terminal-box {
+            background: #04020a;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        .terminal-header {
+            background: #0b0f19;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border-color);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .terminal-body {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #d1d5db;
+        }
+
+        /* Files Explorer Panel */
+        .files-pane {
+            flex: 1;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 240px 1.5fr 1fr;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        .file-tree-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .tree-node {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            padding: 5px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .tree-node:hover {
+            background: rgba(255, 255, 255, 0.02);
+            color: #fff;
+        }
+
+        .tree-node.active {
+            background: rgba(56, 189, 248, 0.08);
+            color: var(--cyan-glow);
+            font-weight: 600;
+        }
+
+        .file-list-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .file-list-header {
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border-color);
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .file-list-body {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .file-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .file-row:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .file-row.selected {
+            background: rgba(56, 189, 248, 0.08);
+            color: var(--cyan-glow);
+        }
+
+        .file-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-meta-col {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Desktop Mock Panel */
+        .desktop-pane {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #02040a;
+            position: relative;
+        }
+
+        .desktop-screen {
+            width: 90%;
+            height: 90%;
+            background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+            border: 4px solid #334155;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .desktop-bar {
+            height: 30px;
+            background: #0f172a;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .desktop-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .desktop-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .desktop-icon i {
+            font-size: 40px;
+            color: var(--cyan-glow);
+            filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.4));
+        }
+
+        .desktop-icon span {
+            font-size: 11px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LEFT SIDEBAR: EXACT MATCH TO SCREENSHOT PATTERNS -->
+    <div class="sidebar">
+        <div class="logo-area">
+            <i class="fa-solid fa-shield-halved"></i> CyberForge
+        </div>
+
+        <nav class="nav-group">
+            <a href="/dashboard" class="nav-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+            <a href="/hacker" class="nav-item"><i class="fa-solid fa-terminal"></i> Hacker Interface</a>
+            <a href="/victim" class="nav-item"><i class="fa-solid fa-desktop"></i> Victim Interface</a>
+            <a href="/labs/defensive" class="nav-item active"><i class="fa-solid fa-flask"></i> Threat Lab Center</a>
+            <a href="/packet_sniffer" class="nav-item"><i class="fa-solid fa-network-wired"></i> Packet Sniffer</a>
+            <a href="/password_analyzer" class="nav-item"><i class="fa-solid fa-key"></i> Password Analyzer</a>
+            <a href="/ai_copilot" class="nav-item"><i class="fa-solid fa-robot"></i> AI Cyber Copilot</a>
+            <a href="/academy" class="nav-item"><i class="fa-solid fa-graduation-cap"></i> Cyber Defense Academy</a>
+            <a href="/report" class="nav-item"><i class="fa-solid fa-file-pdf"></i> Generate Report</a>
+            <a href="/awareness" class="nav-item"><i class="fa-solid fa-graduation-cap"></i> Cyber Safety Awareness</a>
+            <a href="/scenario_engine" class="nav-item"><i class="fa-solid fa-gamepad"></i> Scenario Engine</a>
+            <a href="/gamification" class="nav-item"><i class="fa-solid fa-trophy"></i> Gamification</a>
+            <a href="/siem_center" class="nav-item"><i class="fa-solid fa-server"></i> SIEM Center</a>
+            <a href="/ai_mentor" class="nav-item"><i class="fa-solid fa-graduation-cap"></i> AI Mentor Mode</a>
+            <a href="/report_center" class="nav-item"><i class="fa-solid fa-folder-open"></i> Report Center</a>
+            <a href="/logout" class="nav-item"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </nav>
+
+        <div class="infra-section">
+            <div class="infra-title">Infrastructure</div>
+            <div class="infra-item">
+                <div class="status-dot"></div> Kali Linux
+            </div>
+            <div class="infra-item">
+                <div class="status-dot"></div> Metasploitable
+            </div>
+            <div class="infra-item">
+                <div class="status-dot"></div> Flask Server
+            </div>
+            <div class="infra-item">
+                <div class="status-dot"></div> SQLite Database
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN LAB OPERATIONS WORKSPACE -->
+    <div class="workspace">
+        
+        <!-- Top HUD Bar -->
+        <header class="hud-header">
+            <div class="hud-title-area">
+                <h2>Defensive Operations</h2>
+                <p>SOC Level 1 Analyst Path</p>
+            </div>
+            
+            <div class="hud-meta-area">
+                <div class="hud-stat timer">
+                    <i class="fa-regular fa-clock"></i> Lab Time: <span id="labTimer">01:23:45</span>
+                </div>
+                <div class="hud-stat points">
+                    <i class="fa-regular fa-star"></i> Points: 350
+                </div>
+                <div class="progress-container">
+                    <span>Progress</span>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="labProgressBar"></div>
+                    </div>
+                    <span id="progressText">45%</span>
+                </div>
+                <button class="end-lab-btn" onclick="confirmEndLab()">End Lab</button>
+            </div>
+        </header>
+
+        <!-- Split Left/Right Workspace -->
+        <div class="panes-grid">
+            
+            <!-- Left Pane: Tasks Instruction & Answer Fields -->
+            <section class="pane-left">
+                
+                <!-- Task Selector Tabs -->
+                <div class="task-selector-bar">
+                    <button class="task-tab" id="task-tab-1" onclick="switchTask(1)">1. Intro</button>
+                    <button class="task-tab" id="task-tab-2" onclick="switchTask(2)">2. Recon</button>
+                    <button class="task-tab" id="task-tab-3" onclick="switchTask(3)">3. Analytics</button>
+                    <button class="task-tab active" id="task-tab-4" onclick="switchTask(4)">4. Investigate</button>
+                </div>
+
+                <!-- Dynamic Task Contents Container -->
+                <div class="task-content-box" id="taskContentBox">
+                    
+                    <!-- Task Title & Badges -->
+                    <div class="task-header">
+                        <h3 id="taskTitleText">Investigate Suspicious Activity</h3>
+                        <span class="task-points-badge" id="taskPointsText">10 / 12 XP</span>
+                    </div>
+
+                    <!-- Task Description text body -->
+                    <div class="task-desc" id="taskDescText">
+                        An alert has been triggered for unusual authentication activity and a potential brute force attack against a Windows server. Analyze the provided logs and artifacts to identify the source and scope of the attack.
+                    </div>
+
+                    <!-- Interactive Attack Scenario View Trigger Button -->
+                    <button class="scenario-btn" onclick="focusScenarioView()">
+                        <i class="fa-solid fa-play"></i> View Attack Scenario
+                    </button>
+
+                    <!-- Objectives checklist -->
+                    <div class="objectives-checklist">
+                        <h4>Objectives Checklist</h4>
+                        <div class="checklist-item done" id="obj-0">
+                            <i class="fa-regular fa-circle-check"></i> Identify the attack type
+                        </div>
+                        <div class="checklist-item done" id="obj-1">
+                            <i class="fa-regular fa-circle-check"></i> Find the source IP address
+                        </div>
+                        <div class="checklist-item done" id="obj-2">
+                            <i class="fa-regular fa-circle-check"></i> Determine the compromised account
+                        </div>
+                        <div class="checklist-item done" id="obj-3">
+                            <i class="fa-regular fa-circle-check"></i> Identify the time of first compromise
+                        </div>
+                        <div class="checklist-item" id="obj-4">
+                            <i class="fa-regular fa-circle"></i> Extract IOC(s)
+                        </div>
+                        <div class="checklist-item" id="obj-5">
+                            <i class="fa-regular fa-circle"></i> Submit your findings
+                        </div>
+                    </div>
+
+                    <!-- Quizzes/Submit Answers inputs box -->
+                    <div class="answers-form" id="answersFormBox">
+                        <h4>Submit Your Answers</h4>
+                        
+                        <!-- Input 1 -->
+                        <div class="answer-field-row">
+                            <span class="answer-label">Source IP Address</span>
+                            <div class="answer-input-wrapper">
+                                <input type="text" id="ansInput_ip" class="answer-input" placeholder="e.g. 10.0.0.1" oninput="validateField('ip')">
+                                <span class="validation-indicator" id="valid_ip"><i class="fa-solid fa-check"></i> Correct</span>
+                            </div>
+                        </div>
+
+                        <!-- Input 2 -->
+                        <div class="answer-field-row">
+                            <span class="answer-label">Compromised Account</span>
+                            <div class="answer-input-wrapper">
+                                <input type="text" id="ansInput_account" class="answer-input" placeholder="e.g. administrator" oninput="validateField('account')">
+                                <span class="validation-indicator" id="valid_account"><i class="fa-solid fa-check"></i> Correct</span>
+                            </div>
+                        </div>
+
+                        <!-- Input 3 -->
+                        <div class="answer-field-row">
+                            <span class="answer-label">Time of First Compromise (UTC)</span>
+                            <div class="answer-input-wrapper">
+                                <input type="text" id="ansInput_time" class="answer-input" placeholder="YYYY-MM-DD HH:MM:SS" oninput="validateField('time')">
+                                <span class="validation-indicator" id="valid_time"><i class="fa-solid fa-check"></i> Correct</span>
+                            </div>
+                        </div>
+
+                        <!-- Input 4 -->
+                        <div class="answer-field-row">
+                            <span class="answer-label">IOC (Hash or IP)</span>
+                            <div class="answer-input-wrapper">
+                                <input type="text" id="ansInput_ioc" class="answer-input" placeholder="e.g. md5/sha256 hash" oninput="validateField('ioc')">
+                                <span class="validation-indicator" id="valid_ioc"><i class="fa-solid fa-check"></i> Correct</span>
+                            </div>
+                        </div>
+
+                        <!-- Submit Final Button -->
+                        <button class="submit-final-btn" id="submitFinalBtn" onclick="submitFinalAnswers()">Submit Final Answers</button>
+                    </div>
+
+                    <!-- Lab Success Box -->
+                    <div class="flag-success-box" id="flagSuccessBox">
+                        <i class="fa-solid fa-circle-check" style="color: var(--green-glow); font-size: 24px; margin-bottom: 10px;"></i>
+                        <h4 style="color:#fff; font-size:15px; margin-bottom:5px;">✓ LAB COMPLETED SUCCESSFULLY!</h4>
+                        <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">Enforced defensive firewall blocks. Attacker has been fully contained.</p>
+                        <div style="background:#020617; padding:10px; border-radius:4px; border:1px dashed var(--green-glow); font-family: 'JetBrains Mono', monospace; color:var(--green-glow); font-size:14px; font-weight:bold;">
+                            THM{FAKEBANK-SECURED}
+                        </div>
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- Right Pane: Live Environment Tabs -->
+            <section class="pane-right">
+                
+                <!-- Environment Tab Controllers -->
+                <div class="lab-environment-header">
+                    <div class="environment-title">
+                        <i class="fa-solid fa-terminal"></i> LAB ENVIRONMENT: <span>Windows Server 2019</span>
+                    </div>
+                    <div class="environment-tabs">
+                        <button class="env-tab-btn" id="env-btn-desktop" onclick="switchEnvTab('desktop')">
+                            <i class="fa-solid fa-display"></i> Desktop
+                        </button>
+                        <button class="env-tab-btn active" id="env-btn-network" onclick="switchEnvTab('network')">
+                            <i class="fa-solid fa-network-wired"></i> Network
+                        </button>
+                        <button class="env-tab-btn" id="env-btn-files" onclick="switchEnvTab('files')">
+                            <i class="fa-solid fa-folder-open"></i> Files
+                        </button>
+                        <button class="env-tab-btn" id="env-btn-logs" onclick="switchEnvTab('logs')">
+                            <i class="fa-solid fa-receipt"></i> Logs
+                        </button>
+                        <button class="env-tab-btn" id="env-btn-tools" onclick="switchEnvTab('tools')">
+                            <i class="fa-solid fa-toolbox"></i> Tools
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tab 1: Desktop content view -->
+                <div class="env-tab-content" id="env-content-desktop">
+                    <div class="desktop-pane">
+                        <div class="desktop-screen">
+                            <div class="desktop-bar">
+                                <i class="fa-brands fa-windows" style="margin-right: 8px;"></i> Windows Server 2019
+                            </div>
+                            <div class="desktop-body">
+                                <div class="desktop-icon" onclick="switchEnvTab('logs')">
+                                    <i class="fa-solid fa-receipt"></i>
+                                    <span>SIEM Logs</span>
+                                </div>
+                                <div class="desktop-icon" onclick="switchEnvTab('files')">
+                                    <i class="fa-solid fa-folder"></i>
+                                    <span>File Explorer</span>
+                                </div>
+                                <div class="desktop-icon" onclick="switchEnvTab('tools')">
+                                    <i class="fa-solid fa-terminal"></i>
+                                    <span>PowerShell</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Network content view -->
+                <div class="env-tab-content active" id="env-content-network">
+                    <div class="network-topology-pane">
+                        <div class="network-top-card">
+                            <h3>Network Topology Map</h3>
+                            
+                            <!-- SVG Render map -->
+                            <div class="topology-svg-container">
+                                <svg class="topology-svg" viewBox="0 0 600 260">
+                                    <defs>
+                                        <!-- Glow Filter -->
+                                        <filter id="glow-cyan" x="-20%" y="-20%" width="140%" height="140%">
+                                            <feGaussianBlur stdDeviation="4" result="blur" />
+                                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                        </filter>
+                                        <filter id="glow-red" x="-20%" y="-20%" width="140%" height="140%">
+                                            <feGaussianBlur stdDeviation="4" result="blur" />
+                                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                        </filter>
+                                    </defs>
+
+                                    <!-- Connection Links Lines -->
+                                    <!-- Attacker to Firewall -->
+                                    <path d="M 120 130 L 250 130" stroke="#ef4444" stroke-width="2" stroke-dasharray="6, 6" filter="url(#glow-red)" />
+                                    <!-- Firewall to Windows Server -->
+                                    <path d="M 290 130 C 350 130, 360 70, 440 70" stroke="#10b981" stroke-width="2" />
+                                    <!-- Firewall to SIEM Server -->
+                                    <path d="M 290 130 C 350 130, 360 190, 440 190" stroke="#10b981" stroke-width="2" />
+
+                                    <!-- Animated Packets Flow -->
+                                    <circle r="4" fill="#ef4444" filter="url(#glow-red)">
+                                        <animateMotion dur="3s" repeatCount="indefinite" path="M 120 130 L 250 130" />
+                                    </circle>
+                                    <circle r="4" fill="#ef4444" filter="url(#glow-red)">
+                                        <animateMotion dur="4s" begin="1s" repeatCount="indefinite" path="M 290 130 C 350 130, 360 70, 440 70" />
+                                    </circle>
+
+                                    <!-- Node Elements Icons -->
+                                    <!-- Attacker Node -->
+                                    <rect x="30" y="90" width="90" height="80" rx="6" fill="#11070f" stroke="#ef4444" stroke-width="2" filter="url(#glow-red)" />
+                                    <text x="75" y="125" fill="#fca5a5" font-size="10" text-anchor="middle" font-family="sans-serif" font-weight="bold">ATTACKER</text>
+                                    <text x="75" y="145" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="monospace">192.168.56.102</text>
+
+                                    <!-- Firewall Node -->
+                                    <rect x="230" y="100" width="60" height="60" rx="30" fill="#0f172a" stroke="#f59e0b" stroke-width="2" />
+                                    <text x="260" y="130" fill="#fff" font-size="10" text-anchor="middle" font-family="sans-serif" font-weight="bold">FIREWALL</text>
+                                    <text x="260" y="148" fill="#94a3b8" font-size="8" text-anchor="middle" font-family="monospace">192.168.56.1</text>
+
+                                    <!-- Windows Server Node -->
+                                    <rect x="440" y="30" width="130" height="80" rx="6" fill="#091420" stroke="#38bdf8" stroke-width="2" />
+                                    <text x="505" y="65" fill="#fff" font-size="10" text-anchor="middle" font-family="sans-serif" font-weight="bold">Windows Server 2019</text>
+                                    <text x="505" y="85" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="monospace">192.168.56.10</text>
+
+                                    <!-- SIEM Server Node -->
+                                    <rect x="440" y="150" width="130" height="80" rx="6" fill="#091420" stroke="#38bdf8" stroke-width="2" />
+                                    <text x="505" y="185" fill="#fff" font-size="10" text-anchor="middle" font-family="sans-serif" font-weight="bold">SIEM SERVER</text>
+                                    <text x="505" y="205" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="monospace">192.168.56.20</text>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- Legend Details & Status Metrics Layout -->
+                        <div class="network-bottom-layout">
+                            <div class="legend-card">
+                                <h4 style="font-size:11px; text-transform:uppercase; color:#fff;">Traffic Vector Legend</h4>
+                                <div class="legend-grid">
+                                    <div class="legend-item">
+                                        <div class="legend-color-dot normal"></div> Normal Traffic
+                                    </div>
+                                    <div class="legend-item">
+                                        <div class="legend-color-dot suspicious"></div> Suspicious Traffic
+                                    </div>
+                                    <div class="legend-item">
+                                        <div class="legend-color-dot blocked"></div> Blocked Traffic
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="status-grid-card">
+                                <h4 style="font-size:11px; text-transform:uppercase; color:#fff;">Network Indicators</h4>
+                                <div class="status-metrics">
+                                    <div class="metric-item">
+                                        <div class="metric-label">Hosts</div>
+                                        <div class="metric-value" style="color:var(--cyan-glow);">4</div>
+                                    </div>
+                                    <div class="metric-item">
+                                        <div class="metric-label">Ports</div>
+                                        <div class="metric-value" style="color:var(--cyan-glow);">7</div>
+                                    </div>
+                                    <div class="metric-item">
+                                        <div class="metric-label">Alerts</div>
+                                        <div class="metric-value" style="color:var(--red-glow);">3</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Files content view -->
+                <div class="env-tab-content" id="env-content-files">
+                    <div class="files-pane">
+                        <!-- tree directory list -->
+                        <div class="file-tree-card">
+                            <h4 style="font-size:11px; text-transform:uppercase; color:#fff;">C:\ Directory Tree</h4>
+                            <div class="tree-node active" onclick="loadDirectory('root')">
+                                <i class="fa-solid fa-folder"></i> C:\
+                            </div>
+                            <div class="tree-node" style="padding-left: 20px;" onclick="loadDirectory('windows')">
+                                <i class="fa-solid fa-folder"></i> Windows
+                            </div>
+                            <div class="tree-node" style="padding-left: 20px;" onclick="loadDirectory('inetpub')">
+                                <i class="fa-solid fa-folder"></i> inetpub
+                            </div>
+                            <div class="tree-node" style="padding-left: 35px;" onclick="loadDirectory('wwwroot')">
+                                <i class="fa-solid fa-folder"></i> wwwroot
+                            </div>
+                        </div>
+
+                        <!-- directory files table -->
+                        <div class="file-list-card">
+                            <div class="file-list-header" id="currentDirLabel">C:\</div>
+                            <div class="file-list-body" id="fileListBody">
+                                <!-- Loaded dynamically via JS -->
+                            </div>
+                        </div>
+
+                        <!-- file properties metadata panel -->
+                        <div class="details-card">
+                            <div class="details-header">File Metadata Properties</div>
+                            <div class="details-body" style="padding:15px; color:var(--text-muted); font-size:12px; display:flex; flex-direction:column; gap:10px;" id="fileDetailsPanel">
+                                <div style="text-align:center; margin:auto;">
+                                    <i class="fa-solid fa-file" style="font-size:36px; margin-bottom:10px; color:#1e293b;"></i>
+                                    <p>Select a file to inspect its hash metadata and integrity attributes.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 4: Logs content view -->
+                <div class="env-tab-content" id="env-content-logs">
+                    <div class="siem-analytics-pane">
+                        
+                        <!-- SIEM Event Logs Grid Table -->
+                        <div class="siem-table-card">
+                            <div class="siem-table-header">
+                                <h4>Showing: Failed Logon Attempts</h4>
+                                <div class="siem-table-controls">
+                                    <button class="siem-control-btn"><i class="fa-solid fa-filter"></i> Filter</button>
+                                    <button class="siem-control-btn"><i class="fa-solid fa-download"></i> Export</button>
+                                </div>
+                            </div>
+                            <div class="siem-table-wrapper">
+                                <table class="siem-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Time (UTC)</th>
+                                            <th>Source IP</th>
+                                            <th>User</th>
+                                            <th>Event ID</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="siemTableBody">
+                                        <!-- Handled in JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Splits JSON explorer & Event alerts -->
+                        <div class="siem-bottom-grid">
+                            
+                            <!-- Log Details Card -->
+                            <div class="details-card">
+                                <div class="details-header">Raw Event Log Details JSON</div>
+                                <div class="details-body">
+                                    <pre class="details-json" id="logDetailsJSON">{ "select": "Select a log row from the table above to view raw JSON events." }</pre>
+                                </div>
+                            </div>
+
+                            <!-- Alert Card -->
+                            <div class="summary-card">
+                                <div class="details-header" style="background:transparent; padding:0; margin-bottom:5px;">Threat Event Summary</div>
+                                <div class="severity-alert-bar">
+                                    <div>
+                                        <strong style="color:#fff; font-size:12px; display:block;">LOG ANALYSIS THREAT WARNING</strong>
+                                        <span style="font-size:10px; color:var(--text-muted);" id="summaryAlertText">Multiple logon failure events tracked.</span>
+                                    </div>
+                                    <span class="status-pill failed" style="font-size:9px;">High Severity</span>
+                                </div>
+                                <p style="font-size:12px; color:var(--text-muted); line-height:1.5;" id="summaryExplainText">
+                                    Select an event log to parse threat vectors.
+                                </p>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Tab 5: Tools content view -->
+                <div class="env-tab-content" id="env-content-tools">
+                    <div class="tools-pane">
+                        
+                        <!-- Windows Powershell Terminal -->
+                        <div class="terminal-box">
+                            <div class="terminal-header">
+                                <span>Windows PowerShell - Administrator Console</span>
+                                <i class="fa-solid fa-circle" style="color:var(--green-glow);"></i>
+                            </div>
+                            <div class="terminal-body" style="background:#01172f; color:#fff;">
+                                <div style="color:var(--text-muted); margin-bottom:5px;">Windows PowerShell</div>
+                                <div style="color:var(--text-muted); margin-bottom:15px;">Copyright (C) Microsoft Corporation. All rights reserved.</div>
+                                <div>PS C:\Users\Analyst> Get-EventLog -LogName Security -Newest 20</div>
+                                <br>
+                                <div style="font-family:'Courier New', monospace; font-size:11px; white-space:pre; color:#ddd;">
+Index Time          EntryType   Source                     EventID Message
+----- ----          ---------   ------                     ------- -------
+4625  May 13 07:42:11 Failure     Microsoft-Windows-Securit... 4625    An account failed to log on.
+4625  May 13 07:42:10 Failure     Microsoft-Windows-Securit... 4625    An account failed to log on.
+4625  May 13 07:42:09 Failure     Microsoft-Windows-Securit... 4625    An account failed to log on.
+4625  May 13 07:42:08 Failure     Microsoft-Windows-Securit... 4625    An account failed to log on.
+4625  May 13 07:42:07 Failure     Microsoft-Windows-Securit... 4625    An account failed to log on.
+4624  May 13 07:42:31 Success     Microsoft-Windows-Securit... 4624    An account was successfully logged on.
+4688  May 13 07:43:02 Success     Microsoft-Windows-Securit... 4688    A new process was created.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kali Linux Terminal Console -->
+                        <div class="terminal-box">
+                            <div class="terminal-header">
+                                <span>analyst@kali: ~</span>
+                                <i class="fa-solid fa-circle" style="color:var(--green-glow);"></i>
+                            </div>
+                            <div class="terminal-body" style="background:#050505; color:#00ff00;">
+                                <div style="color:#bbb;">analyst@kali:~$ nmap -A 192.168.56.10</div>
+                                <div style="color:#aaa; font-family:'Courier New', monospace; font-size:11px; margin-top:10px; line-height:1.4;">
+Starting Nmap 7.94 ( https://nmap.org ) at 2025-05-13 08:10 UTC
+Nmap scan report for 192.168.56.10
+Host is up (0.00067s latency).
+Not shown: 995 filtered tcp ports (no-response)
+
+PORT    STATE SERVICE      VERSION
+22/tcp  open  ssh          OpenSSH 8.0
+80/tcp  open  http         Microsoft IIS httpd 10.0
+445/tcp open  microsoft-ds Windows Server 2019 Standard 17763 microsoft-ds
+
+Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </section>
+
+        </div>
+
+    </div>
+
+    <!-- Layout & validation JavaScript logic -->
+    <script>
+        // Lab Timer Uptime
+        let duration = 5025; // 01:23:45 starting equivalent seconds
+        setInterval(() => {
+            duration++;
+            let hrs = Math.floor(duration / 3600);
+            let mins = Math.floor((duration % 3600) / 60);
+            let secs = duration % 60;
+            document.getElementById("labTimer").innerText = 
+                `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }, 1000);
+
+        // Env Tab Navigation switcher
+        function switchEnvTab(tabName) {
+            document.querySelectorAll(".env-tab-content").forEach(el => el.classList.remove("active"));
+            document.querySelectorAll(".env-tab-btn").forEach(el => el.classList.remove("active"));
+            
+            document.getElementById(`env-content-${tabName}`).classList.add("active");
+            document.getElementById(`env-btn-${tabName}`).classList.add("active");
+        }
+
+        // Left Pane Task switcher
+        const tasksDataset = {
+            1: {
+                title: "Think like a Defender",
+                points: "2 / 12 XP",
+                desc: "Defensive security is the operational workflow process deployed to actively safeguard network perimeters, endpoints, hardware infrastructure, and digital assets. Focus on understanding the core defensive models and validation frameworks."
+            },
+            2: {
+                title: "Network Reconnaissance / Port Scan",
+                points: "4 / 12 XP",
+                desc: "Identify host parameters by reviewing Nmap logs. Attackers generally initiate recon scans to map out active IP ranges, open service ports, and operating systems versions prior to exploit loops."
+            },
+            3: {
+                title: "Analyze SIEM Event Logs",
+                points: "7 / 12 XP",
+                desc: "Review system logon events on the SIEM dashboard. Windows Server logs audit security logs with specific Event IDs (e.g. 4625 for logon failure, 4624 for successful logon). Analyze the correlation pattern."
+            },
+            4: {
+                title: "Investigate Suspicious Activity",
+                points: "10 / 12 XP",
+                desc: "An alert has been triggered for unusual authentication activity and a potential brute force attack against a Windows server. Analyze the provided logs and artifacts to identify the source and scope of the attack."
+            }
+        };
+
+        function switchTask(taskNum) {
+            document.querySelectorAll(".task-tab").forEach(el => el.classList.remove("active"));
+            document.getElementById(`task-tab-${taskNum}`).classList.add("active");
+
+            // Update copy
+            document.getElementById("taskTitleText").innerText = tasksDataset[taskNum].title;
+            document.getElementById("taskPointsText").innerText = tasksDataset[taskNum].points;
+            document.getElementById("taskDescText").innerText = tasksDataset[taskNum].desc;
+
+            // Route tab to match tasks
+            if (taskNum === 1 || taskNum === 2) {
+                switchEnvTab("network");
+            } else if (taskNum === 3) {
+                switchEnvTab("logs");
+            } else if (taskNum === 4) {
+                switchEnvTab("logs");
+            }
+        }
+
+        function focusScenarioView() {
+            // Flash and select logs tab
+            switchEnvTab("logs");
+            writeToTerminalLogsNotice();
+        }
+
+        function confirmEndLab() {
+            if (confirm("Are you sure you want to end this lab instance and return to SOC Dashboard?")) {
+                window.location.href = "/dashboard";
+            }
+        }
+
+        // Quizzes validation fields data
+        const validationAnswers = {
+            ip: "192.168.56.102",
+            account: "svc_backup",
+            time: "2025-05-13 07:42:11",
+            ioc: "a3f5d8e6c1b4e2f9a7d6c3b8e5f1a2d4"
+        };
+
+        let answersCompleted = { ip: false, account: false, time: false, ioc: false };
+
+        function validateField(fieldName) {
+            let inputEl = document.getElementById(`ansInput_${fieldName}`);
+            let valIndicator = document.getElementById(`valid_${fieldName}`);
+            let val = inputEl.value.trim();
+
+            let isCorrect = false;
+            if (fieldName === 'time') {
+                isCorrect = (val === "2025-05-13 07:42:11" || val === "2025-05-13 07:42:31");
+            } else {
+                isCorrect = (val.toLowerCase() === validationAnswers[fieldName].toLowerCase());
+            }
+
+            if (isCorrect) {
+                valIndicator.classList.add("correct");
+                inputEl.style.borderColor = "var(--green-glow)";
+                answersCompleted[fieldName] = true;
+                
+                // Check checklist items checks
+                if (fieldName === 'ip') document.getElementById('obj-1').classList.add('done');
+                if (fieldName === 'account') document.getElementById('obj-2').classList.add('done');
+                if (fieldName === 'time') document.getElementById('obj-3').classList.add('done');
+                if (fieldName === 'ioc') document.getElementById('obj-4').classList.add('done');
+            } else {
+                valIndicator.classList.remove("correct");
+                inputEl.style.borderColor = "var(--border-color)";
+                answersCompleted[fieldName] = false;
+            }
+
+            checkAllAnswersComplete();
+        }
+
+        function checkAllAnswersComplete() {
+            let btn = document.getElementById("submitFinalBtn");
+            if (answersCompleted.ip && answersCompleted.account && answersCompleted.time && answersCompleted.ioc) {
+                btn.classList.add("active");
+                btn.style.cursor = "pointer";
+            } else {
+                btn.classList.remove("active");
+                btn.style.cursor = "not-allowed";
+            }
+        }
+
+        function submitFinalAnswers() {
+            if (answersCompleted.ip && answersCompleted.account && answersCompleted.time && answersCompleted.ioc) {
+                // Show completion banner
+                document.getElementById("answersFormBox").style.display = "none";
+                document.getElementById("flagSuccessBox").style.display = "block";
+                document.getElementById("obj-5").classList.add("done");
+
+                // Update HUD progress and badges
+                document.getElementById("labProgressBar").style.width = "100%";
+                document.getElementById("progressText").innerText = "100%";
+                document.getElementById("task-tab-4").classList.add("completed");
+                
+                alert("✓ Challenge Completed! Containment firewall policies active. Flag generated.");
+            }
+        }
+
+        // SIEM Data Model
+        const logsDataset = [
+            { id: 0, time: "2025-05-13 07:42:11", ip: "192.168.56.102", user: "svc_backup", event: "4625", status: "Failed", severity: "High", msg: "Multiple failed authentication attempts detected from 192.168.56.102 targeting the backup services user account. Indicates a brute force attack attempt." },
+            { id: 1, time: "2025-05-13 07:42:10", ip: "192.168.56.102", user: "administrator", event: "4625", status: "Failed", severity: "High", msg: "Failed logon attempt for 'administrator' account from remote IP address 192.168.56.102." },
+            { id: 2, time: "2025-05-13 07:42:09", ip: "192.168.56.102", user: "admin", event: "4625", status: "Failed", severity: "Medium", msg: "Failed logon attempt for generic 'admin' account from remote IP address 192.168.56.102." },
+            { id: 3, time: "2025-05-13 07:42:08", ip: "192.168.56.102", user: "backup", event: "4625", status: "Failed", severity: "Medium", msg: "Failed logon attempt for service 'backup' account from remote IP address 192.168.56.102." },
+            { id: 4, time: "2025-05-13 07:42:07", ip: "192.168.56.102", user: "test", event: "4625", status: "Failed", severity: "Low", msg: "Failed logon attempt for generic 'test' account from remote IP address 192.168.56.102." },
+            { id: 5, time: "2025-05-13 07:42:31", ip: "192.168.56.102", user: "svc_backup", event: "4624", status: "Success", severity: "Informational", msg: "Successful authentication session established for service backup user account svc_backup." },
+            { id: 6, time: "2025-05-13 07:43:02", ip: "192.168.56.102", user: "svc_backup", event: "4688", status: "Success", severity: "High", msg: "New process created: C:\\Windows\\System32\\cmd.exe running backdoor binary tool C:\\inetpub\\wwwroot\\backdoor_svc.exe." }
+        ];
+
+        function populateSIEMTable() {
+            const tbody = document.getElementById("siemTableBody");
+            tbody.innerHTML = "";
+            logsDataset.forEach(row => {
+                const tr = document.createElement("tr");
+                tr.id = `siem-row-${row.id}`;
+                tr.onclick = () => selectSIEMRow(row.id);
+                tr.innerHTML = `
+                    <td>${row.time}</td>
+                    <td>${row.ip}</td>
+                    <td>${row.user}</td>
+                    <td>${row.event}</td>
+                    <td><span class="status-pill ${row.status.toLowerCase()}">${row.status}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function selectSIEMRow(rowId) {
+            document.querySelectorAll("#siemTableBody tr").forEach(el => el.classList.remove("selected"));
+            document.getElementById(`siem-row-${rowId}`).classList.add("selected");
+
+            const rowData = logsDataset.find(r => r.id === rowId);
+
+            // Update JSON panel
+            document.getElementById("logDetailsJSON").innerText = JSON.stringify({
+                time: rowData.time,
+                source_ip: rowData.ip,
+                target_user: rowData.user,
+                event_id: parseInt(rowData.event),
+                authentication_status: rowData.status,
+                calculated_severity: rowData.severity,
+                event_message: rowData.msg
+            }, null, 4);
+
+            // Update Alert
+            document.getElementById("summaryAlertText").innerText = `Event: ID ${rowData.event} (${rowData.status})`;
+            document.getElementById("summaryExplainText").innerText = rowData.msg;
+        }
+
+        // Initialize SIEM
+        populateSIEMTable();
+        selectSIEMRow(0);
+
+        // File Explorer Mock Directory Model
+        const filesDataset = {
+            root: [
+                { name: "Windows", isDir: true },
+                { name: "inetpub", isDir: true },
+                { name: "config.json", isDir: false, size: "1.2 KB", date: "2025-04-10 12:00", hash: "9e107d9d372bb6826bd81d3542a419d6" }
+            ],
+            windows: [
+                { name: "System32", isDir: true },
+                { name: "explorer.exe", isDir: false, size: "4.5 MB", date: "2024-11-20 09:12", hash: "5d8363a032d1680bc9d2a00c6d5952d7" }
+            ],
+            inetpub: [
+                { name: "wwwroot", isDir: true }
+            ],
+            wwwroot: [
+                { name: "index.html", isDir: false, size: "8.4 KB", date: "2025-05-13 07:50", hash: "f3c9d09a349b109e2cf38a0f9bcf09e4" },
+                { name: "backdoor_svc.exe", isDir: false, size: "1.4 MB", date: "2025-05-13 07:43", hash: "a3f5d8e6c1b4e2f9a7d6c3b8e5f1a2d4" }
+            ]
+        };
+
+        let currentDir = 'root';
+
+        function loadDirectory(dirName) {
+            currentDir = dirName;
+            document.querySelectorAll(".tree-node").forEach(el => el.classList.remove("active"));
+            
+            // Highlight node (simple string matching check)
+            if(dirName === 'root') document.querySelector(".tree-node:nth-child(2)").classList.add("active");
+
+            document.getElementById("currentDirLabel").innerText = `C:\\${dirName === 'root' ? '' : dirName.replace('root/', '').replace('/', '\\')}`;
+
+            const fileList = document.getElementById("fileListBody");
+            fileList.innerHTML = "";
+
+            filesDataset[dirName].forEach(file => {
+                const row = document.createElement("div");
+                row.className = "file-row";
+                row.onclick = () => selectFile(file);
+                row.innerHTML = `
+                    <div class="file-name">
+                        <i class="${file.isDir ? 'fa-solid fa-folder' : 'fa-solid fa-file-code'}" style="color: ${file.isDir ? 'var(--cyan-glow)' : 'var(--text-muted)'};"></i>
+                        <span>${file.name}</span>
+                    </div>
+                    <span class="file-meta-col">${file.isDir ? 'Folder' : file.size}</span>
+                `;
+                fileList.appendChild(row);
+            });
+        }
+
+        function selectFile(file) {
+            const panel = document.getElementById("fileDetailsPanel");
+            if (file.isDir) {
+                panel.innerHTML = `
+                    <div style="text-align:center; margin:auto;">
+                        <i class="fa-solid fa-folder" style="font-size:36px; margin-bottom:10px; color:var(--cyan-glow);"></i>
+                        <p>Directory: <strong>${file.name}</strong></p>
+                        <small style="color:var(--text-muted);">Double-click in the tree to expand files.</small>
+                    </div>
+                `;
+            } else {
+                panel.innerHTML = `
+                    <h5 style="color:#fff; font-size:13px; border-bottom:1px solid var(--border-color); padding-bottom:5px;">File Parameters</h5>
+                    <div><strong>Name:</strong> ${file.name}</div>
+                    <div><strong>Size:</strong> ${file.size}</div>
+                    <div><strong>Modified:</strong> ${file.date}</div>
+                    <div style="margin-top:10px;"><strong>MD5 Hash checksum:</strong></div>
+                    <div style="font-family:'JetBrains Mono', monospace; font-size:11px; background:#02040a; padding:6px; border:1px solid #111827; border-radius:4px; color:var(--cyan-glow); margin-top:5px; word-break:break-all;">
+                        ${file.hash}
+                    </div>
+                    <div style="margin-top:5px; font-size:10px; color:${file.name === 'backdoor_svc.exe' ? 'var(--red-glow)' : 'var(--green-glow)'};">
+                        ${file.name === 'backdoor_svc.exe' ? '⚠️ UNVERIFIED THREAT EXECUTABLE FILE' : '✓ Verified System File'}
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize explorer directory list
+        loadDirectory('root');
+    </script>
+</body>
+</html>

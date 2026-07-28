@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberForge | AI Cyber Copilot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        .chat-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .terminal-box {
+            height: 500px;
+            background: #020617;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 20px;
+            overflow-y: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            border-left: 4px solid #00ff99;
+        }
+        .input-tray {
+            display: flex;
+            gap: 15px;
+        }
+        .terminal-input {
+            flex: 1;
+            padding: 14px;
+            background: #0f172a;
+            color: white;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            font-size: 15px;
+            outline: none;
+            font-family: 'Consolas', monospace;
+        }
+        .terminal-input:focus {
+            border-color: #00ff99;
+        }
+        .send-btn {
+            padding: 0 30px;
+            background: #00ff99;
+            color: black;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+        .send-btn:hover {
+            background: #00cc7a;
+            box-shadow: 0 0 10px rgba(0, 255, 153, 0.3);
+        }
+        .msg { margin: 12px 0; line-height: 1.5; }
+    </style>
+</head>
+<body style="background:#050816; color:white;">
+
+    <!-- Top Navigation Bar -->
+    <div class="topbar" style="padding: 25px; background: #0b1020; border-bottom: 1px solid #1b2b45; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1 style="margin: 0; color: white; font-size: 24px;"><i class="fa-solid fa-robot" style="color: #00ff99; margin-right: 10px;"></i>AI Cyber Copilot Terminal</h1>
+            <p style="margin: 5px 0 0 0; color: #94a3b8;">Secure LLM Operations Interface — Operator: {{ username }}</p>
+        </div>
+        <a href="/dashboard" class="logout-btn" style="background: #1e293b; color: #00ff99; border: 1px solid #334155; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: bold;">← Dashboard</a>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="chat-container">
+        <div class="panel" style="background: #101827; border-radius: 12px; padding: 25px; border: 1px solid #1e293b;">
+            
+            <!-- Dynamic Terminal Feed Screen -->
+            <div id="copilotTerminal" class="terminal-box">
+                <p style="color: #00ff99; margin: 0 0 10px 0;">🤖 [SYSTEM] CyberForge Core Intelligence linked via Gemini 1.5 Flash.</p>
+                <p style="color: #94a3b8; margin: 0 0 15px 0;">[SECURITY NOTICE] Guardrails active. System handles cybersecurity inquiries exclusively.</p>
+                <hr style="border: 0; border-top: 1px dashed #1e293b; margin: 15px 0;">
+            </div>
+
+            <!-- Interaction Tray Elements -->
+            <div class="input-tray">
+                <input id="copilotQuery" class="terminal-input" type="text" placeholder="Query neural model (e.g., Explain SQL injection prevention)..." autocomplete="off" onkeypress="handleKeyPress(event)">
+                <button onclick="submitCopilotQuery()" class="send-btn">Execute</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Communication Logic Script -->
+    <script>
+    function handleKeyPress(e) {
+        if (e.key === "Enter") {
+            submitCopilotQuery();
+        }
+    }
+
+    function submitCopilotQuery() {
+        let inputField = document.getElementById("copilotQuery");
+        if (!inputField) return;
+
+        let question = inputField.value.trim();
+        if (!question) return;
+
+        let terminal = document.getElementById("copilotTerminal");
+        if (terminal) {
+            terminal.innerHTML += `<div class="msg" style="color: #e5e7eb;"><b>👤 operator@cyberforge:~$</b> ${escapeHtml(question)}</div>`;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        inputField.value = ""; // Clear input buffer
+
+        // Post request stream payload straight to Gemini core endpoint
+        fetch("/api/ai", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ question: question })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (terminal) {
+                terminal.innerHTML += `<div class="msg" style="color: #00ff99;"><b>🤖 copilot:#</b> ${escapeHtml(data.reply)}</div>`;
+                terminal.scrollTop = terminal.scrollHeight;
+            }
+        })
+        .catch(err => {
+            console.error("Link broken:", err);
+            if (terminal) {
+                terminal.innerHTML += `<div class="msg" style="color: #ff4444;"><b>❌ [ERROR]</b> Data packet stream broken. Matrix offline.</div>`;
+            }
+        });
+    }
+
+    function escapeHtml(text) {
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+    </script>
+</body>
+</html>

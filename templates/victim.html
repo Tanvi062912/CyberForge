@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberForge - Simulated Victim Workstation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            background: #004578;
+            color: #fff;
+        }
+
+
+
+        /* Windows 11 Lock Screen */
+        .win-lock-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f172a, #1e1b4b);
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1);
+        }
+
+        .lock-time {
+            font-size: 78px;
+            font-weight: 300;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .lock-date {
+            font-size: 20px;
+            color: #cbd5e1;
+            margin-bottom: 35px;
+        }
+
+        .login-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 30px;
+            border-radius: 12px;
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .avatar-frame {
+            width: 85px;
+            height: 85px;
+            border-radius: 50%;
+            background: #0078d4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-bottom: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .username-txt {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .pin-field {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.4);
+            color: #fff;
+            text-align: center;
+            outline: none;
+            margin-bottom: 15px;
+            width: 200px;
+            font-size: 15px;
+            letter-spacing: 3px;
+        }
+
+        .login-btn {
+            background: #0078d4;
+            border: none;
+            color: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .login-btn:hover {
+            background: #1086e1;
+        }
+
+        /* Desktop Environment Map */
+        .win-desktop {
+            width: 100%;
+            height: calc(100vh - 48px);
+            position: relative;
+            background: url('https://images.unsplash.com/photo-1620121692029-d088224ddc74?q=80&w=1920') no-repeat center center;
+            background-size: cover;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-content: flex-start;
+        }
+
+        /* Shortcut Layouts */
+        .desktop-shortcut {
+            width: 85px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid transparent;
+        }
+
+        .desktop-shortcut:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(4px);
+        }
+
+        .desktop-shortcut i {
+            font-size: 32px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        .desktop-shortcut span {
+            font-size: 11px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+            word-break: break-word;
+        }
+
+        /* Professional Window Subsystem Architecture */
+        .win-window {
+            position: absolute;
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(20px);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            min-width: 250px;
+            z-index: 10;
+        }
+
+        .window-header {
+            background: rgba(15, 23, 42, 0.5);
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            cursor: move;
+        }
+
+        .window-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #f3f4f6;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 14px;
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .window-controls i {
+            cursor: pointer;
+        }
+
+        .window-controls i:hover {
+            color: #fff;
+        }
+
+        .window-controls .close-btn-ui:hover {
+            color: #ef4444;
+        }
+
+        .window-body {
+            flex: 1;
+            padding: 14px;
+            overflow-y: auto;
+            color: #e5e7eb;
+        }
+
+        /* Application Designs */
+        .explorer-layout {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            height: 320px;
+        }
+
+        .side-nav {
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            padding-right: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 12px;
+        }
+
+        .side-nav div {
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .side-nav div:hover,
+        .side-nav .active-nav {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+        }
+
+        .explorer-main {
+            padding-left: 12px;
+        }
+
+        .file-item-row {
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .file-item-row:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Command Prompt Panel */
+        .cmd-body {
+            background: #000;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            color: #15f4ee;
+            height: 260px;
+        }
+
+        .cmd-line {
+            margin-bottom: 6px;
+        }
+
+        /* Chrome Web Browser Interface CSS */
+        .chrome-topbar {
+            background: #202124;
+            padding: 8px 12px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            border-bottom: 1px solid #3c4043;
+        }
+
+        .chrome-nav-btn {
+            color: #9aa0a6;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .chrome-nav-btn:hover {
+            color: #fff;
+        }
+
+        .chrome-address-bar {
+            flex: 1;
+            background: #2f3033;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 12px;
+            outline: none;
+            border: 1px solid transparent;
+            font-family: system-ui;
+        }
+
+        .chrome-address-bar:focus {
+            border-color: #8ab4f8;
+            background: #35363a;
+        }
+
+        .chrome-viewport {
+            background: #ffffff;
+            color: #202124;
+            height: 320px;
+            overflow-y: auto;
+            font-family: 'Segoe UI', sans-serif;
+            text-align: left;
+        }
+
+        /* System Table Metrics Matrix */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: left;
+        }
+
+        th {
+            color: #94a3b8;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 10px;
+        }
+
+        /* Taskbar Layout Setup */
+        .win-taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 48px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            z-index: 9999;
+        }
+
+        .tb-icons {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+        }
+
+        .tb-center-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: transform 0.1s;
+        }
+
+        .tb-center-icon:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: scale(1.1);
+        }
+
+        .tb-right {
+            font-size: 11px;
+            color: #cbd5e1;
+            font-family: monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        /* Interactive Start Component Layout */
+        .win-start-menu {
+            display: none;
+            position: fixed;
+            bottom: 56px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 450px;
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(30px);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+        }
+
+        .start-search-bar {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            outline: none;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .start-grid-apps {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            text-align: center;
+            font-size: 11px;
+            color: #cbd5e1;
+        }
+
+        .start-app-unit {
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .start-app-unit:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+        }
+
+        .start-app-unit i {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        /* Lock Out Panel Frame Overlay mapping overlay */
+        .lockout-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #02020a;
+            color: #ff3333;
+            z-index: 999999;
+            font-family: 'Consolas', monospace;
+            padding: 40px;
+            box-sizing: border-box;
+            text-align: left;
+        }
+
+        .lockout-header {
+            font-size: 24px;
+            font-weight: bold;
+            border-bottom: 2px solid #ff3333;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
+
+        .remediate-btn {
+            background-color: #ef4444;
+            border: none;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: sans-serif;
+        }
+
+        .remediate-btn:hover {
+            background-color: #dc2626;
+        }
+
+        .alert-popup-box {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            width: 340px;
+            background: rgba(17, 26, 54, 0.95);
+            border: 1px solid #ef4444;
+            border-radius: 8px;
+            padding: 15px;
+            z-index: 100000;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            display: none;
+            text-align: left;
+        }
+
+        .alert-popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+            color: #ef4444;
+            font-weight: bold;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+
+
+
+    <!-- EXFILTRATION ALERT POPUP BOX -->
+    <div id="exfil-popup" class="alert-popup-box">
+        <div class="alert-popup-header">
+            <span><i class="fa-solid fa-triangle-exclamation"></i> CRITICAL NETWORK ALERT</span>
+            <i class="fa-solid fa-xmark" style="cursor:pointer; color:#9ca3af;" onclick="closeExfilAlert()"></i>
+        </div>
+        <div style="font-size:11px; line-height:1.4; color:#e2e8f0; margin-bottom:12px; font-family:sans-serif;">
+            Anomalous Outbound Transfer Detected: Staging/downloading 50,000 corporate records containing credentials
+            and financial transaction histories.
+        </div>
+        <button class="remediate-btn" onclick="remediate('remediate_exfil'); closeExfilAlert();"
+            style="width:100%; padding:6px; font-size:11px;">Block Outbound Connection & IP</button>
+    </div>
+
+    <!-- SCREEN LOCKOUT PANEL (Ransomware lock screen) -->
+    <div id="lockout-screen" class="lockout-overlay">
+        <div class="lockout-header"><i class="fa-solid fa-skull-crossbones"></i> SYSTEM COMPROMISED - RANSOMWARE ACTIVE
+        </div>
+        <p style="margin-bottom:10px;">[CRITICAL EXECUTION ERROR] Symmetric encryption lock verified across
+            database/victim_storage registry.</p>
+        <p style="margin-bottom:20px;">Local files isolated and renamed with .locked extensions.</p>
+        <div
+            style="margin-top: 30px; background: #1e1b4b; padding: 20px; border: 1px solid #ef4444; border-radius: 8px; max-width: 600px;">
+            <h4 style="color: #ef4444; margin-bottom: 10px; font-family:sans-serif;"><i
+                    class="fa-solid fa-shield-virus"></i> Incident Response Telemetry Recovery</h4>
+            <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 15px; font-family:sans-serif;">To restore systems,
+                verify clean state configurations and trigger backups restoration sequence.</p>
+            <button class="remediate-btn" onclick="remediate('remediate_ransomware')"
+                style="padding: 10px 20px; font-size: 13px;">Restore System Backup & Decrypt</button>
+        </div>
+    </div>
+
+    <!-- NATIVE LOCK SIGN IN SCREEN LAYOUT -->
+    <div id="lock-screen" class="win-lock-screen">
+        <div class="lock-time" id="screen-lock-time">00:00</div>
+        <div class="lock-date" id="screen-lock-date">Initializing Environment...</div>
+        <div class="login-card">
+            <div class="avatar-frame"><i class="fa-solid fa-user-tie"></i></div>
+            <div class="username-txt">SECURECORP \ Operator_Admin</div>
+            <input type="password" id="user-pin" class="pin-field" placeholder="••••" maxlength="4">
+            <button onclick="unlockWindowsSession()" class="login-btn">Sign In</button>
+        </div>
+    </div>
+
+    <!-- MAIN WORKSPACE PLATFORM DESKTOP LAYER -->
+    <div class="win-desktop" onclick="closeStartMenuOutside(event)">
+
+        <!-- Application Icons Shortcuts -->
+        <div class="desktop-shortcut" onclick="openAppWindow('explorer')">
+            <i class="fa-solid fa-folder" style="color: #eab308;"></i>
+            <span>File Explorer</span>
+        </div>
+        <div class="desktop-shortcut" onclick="openAppWindow('sysinfo')">
+            <i class="fa-solid fa-gauge-high" style="color: #38bdf8;"></i>
+            <span>Task Manager</span>
+        </div>
+        <div class="desktop-shortcut" onclick="openAppWindow('security')">
+            <i class="fa-solid fa-shield-halved" style="color: #10b981;"></i>
+            <span>Windows Defender</span>
+        </div>
+        <div class="desktop-shortcut" onclick="openAppWindow('cmd')">
+            <i class="fa-solid fa-terminal" style="color: #cbd5e1;"></i>
+            <span>Command Prompt</span>
+        </div>
+        <div class="desktop-shortcut" onclick="openAppWindow('chrome')">
+            <i class="fa-brands fa-chrome" style="color: #ea4335;"></i>
+            <span>Google Chrome</span>
+        </div>
+
+        <!-- APPLICATION WINDOW 1: FILE EXPLORER -->
+        <div class="win-window" id="app-explorer"
+            style="width: 580px; height: 380px; top: 70px; left: 80px; display: none;"
+            onclick="focusWindow('explorer')">
+            <div class="window-header" onmousedown="dragWindowInit(event, 'app-explorer')">
+                <div class="window-title"><i class="fa-solid fa-folder-open" style="color:#eab308;"></i> File Explorer
+                </div>
+                <div class="window-controls"><i class="fa-solid fa-xmark close-btn-ui"
+                        onclick="closeAppWindow('explorer', event)"></i></div>
+            </div>
+            <div class="window-body explorer-layout">
+                <div class="side-nav">
+                    <div class="active-nav"><i class="fa-solid fa-display"></i> Desktop</div>
+                    <div><i class="fa-solid fa-file-invoice"></i> Documents</div>
+                    <div><i class="fa-solid fa-hdd"></i> Local Disk (C:)</div>
+                </div>
+                <div class="explorer-main">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="file-system-rows">
+                            <!-- Dynamically populated files -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- APPLICATION WINDOW 2: TASK MANAGER / HEALTH METRICS -->
+        <div class="win-window" id="app-sysinfo"
+            style="width: 440px; height: 320px; top: 120px; left: 200px; display: none;"
+            onclick="focusWindow('sysinfo')">
+            <div class="window-header" onmousedown="dragWindowInit(event, 'app-sysinfo')">
+                <div class="window-title"><i class="fa-solid fa-microchip" style="color:#38bdf8;"></i> Task Manager
+                </div>
+                <div class="window-controls"><i class="fa-solid fa-xmark close-btn-ui"
+                        onclick="closeAppWindow('sysinfo', event)"></i></div>
+            </div>
+            <div class="window-body" style="text-align:left;">
+                <div style="margin-bottom:8px; font-size:12px; font-weight:bold; color:#38bdf8;">System Metrics:</div>
+                <table style="margin-bottom:15px;">
+                    <tr>
+                        <td>Host Metric System Profile</td>
+                        <td style="color:#94a3b8;">VICTIM-PC</td>
+                    </tr>
+                    <tr>
+                        <td>Core CPU Utilization Track</td>
+                        <td id="cpu-value" style="color:#10b981; font-weight:bold;">12%</td>
+                    </tr>
+                    <tr>
+                        <td>Available Virtual Storage Profile</td>
+                        <td id="memory-value" style="color:#10b981; font-weight:bold;">45%</td>
+                    </tr>
+                    <tr>
+                        <td>Local Adaptation Firewall Link</td>
+                        <td id="sys-fw-status" style="color:#10b981; font-weight:bold;">Active</td>
+                    </tr>
+                </table>
+
+                <div style="margin-bottom:6px; font-size:12px; font-weight:bold; color:#38bdf8;">Active User Processes:
+                </div>
+                <div
+                    style="max-height:100px; overflow-y:auto; border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:5px;">
+                    <table id="task-manager-process-table" style="font-size:11px;">
+                        <thead>
+                            <tr>
+                                <th>Process Name</th>
+                                <th>CPU</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="task-manager-processes">
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- APPLICATION WINDOW 3: COMMAND PROMPT -->
+        <div class="win-window" id="app-cmd"
+            style="width: 460px; height: 320px; top: 160px; left: 140px; display: none;" onclick="focusWindow('cmd')">
+            <div class="window-header" onmousedown="dragWindowInit(event, 'app-cmd')">
+                <div class="window-title"><i class="fa-solid fa-terminal" style="color:#cbd5e1;"></i> Command Prompt
+                    (cmd.exe)</div>
+                <div class="window-controls"><i class="fa-solid fa-xmark close-btn-ui"
+                        onclick="closeAppWindow('cmd', event)"></i></div>
+            </div>
+            <div class="window-body cmd-body" style="text-align:left;">
+                <div class="cmd-line">Microsoft Windows [Version 10.0.22631]</div>
+                <div class="cmd-line">(c) Microsoft Corporation. All rights reserved.</div>
+                <br>
+                <div id="cmd-history-logs">
+                    <div class="cmd-line">C:\> ipconfig</div>
+                    <div class="cmd-line" style="color:#94a3b8;">IPv4 Address. . . . . . . . . . . : 192.168.24.131
+                    </div>
+                    <div class="cmd-line" style="color:#94a3b8;">Subnet Mask . . . . . . . . . . . : 255.255.255.0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- APPLICATION WINDOW 4: GOOGLE CHROME INTERACTIVE BROWSER -->
+        <div class="win-window" id="app-chrome"
+            style="width: 580px; height: 420px; top: 110px; left: 260px; display: none;"
+            onclick="focusWindow('chrome')">
+            <div class="window-header" onmousedown="dragWindowInit(event, 'app-chrome')">
+                <div class="window-title"><i class="fa-brands fa-chrome" style="color:#ea4335;"></i> Google Chrome</div>
+                <div class="window-controls"><i class="fa-solid fa-xmark close-btn-ui"
+                        onclick="closeAppWindow('chrome', event)"></i></div>
+            </div>
+            <div class="chrome-topbar">
+                <i class="fa-solid fa-arrow-left chrome-nav-btn" onclick="loadChromeURL('chrome://newtab')"></i>
+                <i class="fa-solid fa-arrow-rotate-right chrome-nav-btn" onclick="navigateChromeBar()"></i>
+                <input type="text" id="chrome-url-field" class="chrome-address-bar" value="chrome://newtab"
+                    onkeypress="handleChromeEnter(event)">
+            </div>
+            <div class="window-body chrome-viewport" id="chrome-canvas" style="background:#fff; color:#000;">
+                <!-- Renders inside script dynamically -->
+            </div>
+        </div>
+
+        <!-- APPLICATION WINDOW 5: WINDOWS DEFENDER ENGINE -->
+        <div class="win-window" id="app-security"
+            style="width: 440px; height: 300px; top: 200px; left: 100px; display: none;"
+            onclick="focusWindow('security')">
+            <div class="window-header" onmousedown="dragWindowInit(event, 'app-security')">
+                <div class="window-title"><i class="fa-solid fa-shield-halved" style="color:#10b981;"></i> Windows
+                    Defender</div>
+                <div class="window-controls"><i class="fa-solid fa-xmark close-btn-ui"
+                        onclick="closeAppWindow('security', event)"></i></div>
+            </div>
+            <div class="window-body" style="text-align:left;">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+                    <i class="fa-solid fa-circle-check" id="shield-status-icon"
+                        style="font-size:28px; color:#10b981;"></i>
+                    <div>
+                        <h5 id="defender-headline-txt" style="font-size:13px; margin:0;">Real-Time Shields Running</h5>
+                        <p style="font-size:11px; color:#94a3b8; margin:0;">Signatures synced properly.</p>
+                    </div>
+                </div>
+
+                <div id="defender-alerts-area" style="margin-bottom:12px;">
+                    <!-- Populated with security alerts -->
+                </div>
+
+                <table style="font-size:11px;">
+                    <tr>
+                        <td>Antivirus State</td>
+                        <td id="av-label" style="color:#10b981; font-weight:bold;">Running</td>
+                    </tr>
+                    <tr>
+                        <td>Firewall Profiles</td>
+                        <td id="fw-label" style="color:#10b981; font-weight:bold;">Enabled</td>
+                    </tr>
+                    <tr>
+                        <td>Identified Threats</td>
+                        <td id="threat-count" style="color:#94a3b8; font-weight:bold;">0</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- DOCUMENT WINDOW FILE-VIEW POPUP MOCKUP -->
+        <div class="win-window" id="app-viewer"
+            style="width: 380px; height: 240px; top: 180px; left: 280px; display: none;"
+            onclick="focusWindow('viewer')">
+            <div class="window-header" onmousedown="dragWindowInit(event, 'app-viewer')">
+                <div class="window-title" id="viewer-window-title"><i class="fa-solid fa-file-lines"></i> Document
+                    Viewer</div>
+                <div class="window-controls"><i class="fa-solid fa-xmark close-btn-ui"
+                        onclick="closeAppWindow('viewer', event)"></i></div>
+            </div>
+            <div class="window-body" id="viewer-content-canvas"
+                style="font-size:12px; line-height:1.4; text-align:left; background:#fff; color:#000;">
+                <!-- Rendered via target dynamic selection -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- INTERACTIVE START EXPANSION PANEL MENU -->
+    <div class="win-start-menu" id="start-menu-panel">
+        <input type="text" class="start-search-bar" placeholder="Type here to search system software applications...">
+        <div class="start-grid-apps">
+            <div class="start-app-unit" onclick="openAppWindow('explorer'); closeStartMenu();"><i
+                    class="fa-solid fa-folder" style="color:#eab308;"></i>Explorer</div>
+            <div class="start-app-unit" onclick="openAppWindow('sysinfo'); closeStartMenu();"><i
+                    class="fa-solid fa-gauge-high" style="color:#38bdf8;"></i>Metrics</div>
+            <div class="start-app-unit" onclick="openAppWindow('security'); closeStartMenu();"><i
+                    class="fa-solid fa-shield-halved" style="color:#10b981;"></i>Defender</div>
+            <div class="start-app-unit" onclick="openAppWindow('cmd'); closeStartMenu();"><i
+                    class="fa-solid fa-terminal" style="color:#94a3b8;"></i>Terminal</div>
+            <div class="start-app-unit" onclick="openAppWindow('chrome'); closeStartMenu();"><i
+                    class="fa-brands fa-chrome" style="color:#ea4335;"></i>Chrome</div>
+        </div>
+    </div>
+
+    <!-- DOWNSIDE SYSTEM TASKBAR LAYER -->
+    <div class="win-taskbar">
+        <div class="tb-left">
+            <span>CyberForge Isolated Sandbox Workspace Node</span>
+        </div>
+        <div class="tb-icons">
+            <div class="tb-center-icon" onclick="toggleStartMenu(event)"><i class="fa-brands fa-windows"></i></div>
+            <div class="tb-center-icon" onclick="openAppWindow('explorer')"><i class="fa-solid fa-folder"
+                    style="color:#eab308;"></i></div>
+            <div class="tb-center-icon" onclick="openAppWindow('chrome')"><i class="fa-brands fa-chrome"
+                    style="color:#ea4335;"></i></div>
+            <div class="tb-center-icon" onclick="openAppWindow('cmd')"><i class="fa-solid fa-terminal"
+                    style="color:#94a3b8;"></i></div>
+        </div>
+        <div class="tb-right">
+            <span id="network-status"><i class="fa-solid fa-wifi"></i> 192.168.24.131</span>
+            <span id="clock">00:00:00</span>
+        </div>
+    </div>
+
+    <script>
+        let topZIndex = 100;
+        let dragElement = null;
+        let dragStartX, dragStartY, elementStartX, elementStartY;
+        window.simState = null;
+
+        function escapeHtml(text) {
+            if (!text) return "";
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function handleGoogleResultsSearchKeyPress(e) {
+            if (e.key === "Enter") {
+                const query = e.target.value.trim();
+                loadChromeURL("google.com/search?q=" + encodeURIComponent(query));
+            }
+        }
+
+        function updateClock() {
+            let now = new Date();
+            document.getElementById("clock").innerHTML = now.toLocaleTimeString();
+            let lockTime = document.getElementById("screen-lock-time");
+            if (lockTime) {
+                lockTime.innerHTML = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                document.getElementById("screen-lock-date").innerHTML = now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
+            }
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function unlockWindowsSession() {
+            if (document.getElementById("user-pin").value.trim() !== "") {
+                document.getElementById("lock-screen").style.transform = "translateY(-100%)";
+            }
+        }
+
+        function focusWindow(appId) {
+            topZIndex++;
+            document.getElementById("app-" + appId).style.zIndex = topZIndex;
+        }
+
+        function handleChromeEnter(e) {
+            if (e.key === "Enter") { navigateChromeBar(); }
+        }
+
+        function navigateChromeBar() {
+            let url = document.getElementById("chrome-url-field").value.trim();
+            if (!url) return;
+            
+            const lowercaseUrl = url.toLowerCase();
+            const looksLikeUrl = lowercaseUrl.includes(".") && !lowercaseUrl.includes(" ");
+            const isChromeProtocol = lowercaseUrl.startsWith("chrome://");
+            
+            if (!looksLikeUrl && !isChromeProtocol) {
+                // Convert search query to a Google search url
+                url = "google.com/search?q=" + encodeURIComponent(url);
+            }
+            
+            loadChromeURL(url);
+        }
+
+        function loadChromeURL(url) {
+            document.getElementById("chrome-url-field").value = url;
+            refreshChromeView();
+        }
+
+        function openAppWindow(appId) {
+            const win = document.getElementById("app-" + appId);
+            win.style.display = "flex";
+            if (appId === 'chrome') loadChromeURL('chrome://newtab');
+            focusWindow(appId);
+        }
+
+        function closeAppWindow(appId, event) {
+            if (event) event.stopPropagation();
+            document.getElementById("app-" + appId).style.display = "none";
+        }
+
+        function toggleStartMenu(event) {
+            event.stopPropagation();
+            const menu = document.getElementById("start-menu-panel");
+            menu.style.display = (menu.style.display === "block") ? "none" : "block";
+        }
+
+        function closeStartMenu() {
+            document.getElementById("start-menu-panel").style.display = "none";
+        }
+
+        function closeStartMenuOutside(event) {
+            closeStartMenu();
+        }
+
+        async function openFileDocument(filename) {
+            openAppWindow('viewer');
+            const title = document.getElementById("viewer-window-title");
+            const canvas = document.getElementById("viewer-content-canvas");
+
+            title.innerHTML = `<i class="fa-solid fa-file-lines"></i> ${filename}`;
+            canvas.innerText = "Reading file data...";
+            canvas.style.background = "#fff";
+            canvas.style.color = "#000";
+
+            if (filename.endsWith(".locked")) {
+                canvas.style.background = "#1e293b";
+                canvas.style.color = "#ef4444";
+                canvas.innerHTML = `<p style="font-weight:bold; text-align:center; padding-top:20px;">[FATAL] File Data Locked.\r\nSymmetric encryption sweep has locked access to this file grid.\r\nDecrypt using the SOC console keys.</p>`;
+                return;
+            }
+
+            try {
+                let contents = "Empty file.";
+                if (filename === "passwords.txt") {
+                    contents = "[SECURECORP CRITICAL PASSWORDS]\nActive Directory Admin: AdminSecure2026!\nDatabase Master: DbRootSecurePass%\nFirewall VPN: VPNGatewayAccess!\n";
+                } else if (filename === "financial_records.csv") {
+                    contents = "TransactionID,Date,Amount,Status\nTXN10029,2026-07-01,$15000.00,Completed\nTXN10030,2026-07-02,$450.50,Completed\nTXN10031,2026-07-05,$1200000.00,Staged\n";
+                } else if (filename === "index.html") {
+                    contents = "<!DOCTYPE html>\n<html>\n<head><title>SecureCorp Public Portal</title></head>\n<body>\n  <h1>SecureCorp Corporate Node</h1>\n  <p>System operational. All defensive shields fully functional.</p>\n</body>\n</html>\n";
+                } else if (filename === "config.json") {
+                    contents = "{\n  \"firewall\": \"enabled\",\n  \"ports_open\": [80, 443, 22],\n  \"honey_pot\": false\n}\n";
+                } else if (filename === "backdoor_svc.exe") {
+                    canvas.style.background = "#0f172a";
+                    canvas.style.color = "#fb923c";
+                    contents = "[MOCK MALWARE PROCESS svc]\nHost IP: 192.168.24.131\nStatus: Persistent & Running\nCommand: backdoor_svc.exe --bind 0.0.0.0 --port 9999\n";
+                } else if (filename === "secure_login.html") {
+                    contents = "<form action=\"/phish-catch\">\n  <h2>SecureCorp SSO Authentication</h2>\n  <input type=\"text\" name=\"user\" placeholder=\"Username\">\n  <input type=\"password\" name=\"pass\" placeholder=\"Password\">\n  <input type=\"submit\" value=\"Sign In\">\n</form>\n";
+                }
+
+                canvas.innerText = contents;
+            } catch (e) {
+                canvas.innerText = "Error loading contents: " + e.message;
+            }
+        }
+
+        function dragWindowInit(event, elementId) {
+            if (event.target.classList.contains('close-btn-ui')) return;
+            dragElement = document.getElementById(elementId);
+            focusWindow(elementId.replace("app-", ""));
+
+            dragStartX = event.clientX;
+            dragStartY = event.clientY;
+            elementStartX = parseInt(dragElement.offsetLeft) || 0;
+            elementStartY = parseInt(dragElement.offsetTop) || 0;
+
+            document.addEventListener('mousemove', dragWindowAction);
+            document.addEventListener('mouseup', dragWindowStop);
+        }
+
+        function dragWindowAction(event) {
+            if (!dragElement) return;
+            let deltaX = event.clientX - dragStartX;
+            let deltaY = event.clientY - dragStartY;
+            dragElement.style.left = (elementStartX + deltaX) + "px";
+            dragElement.style.top = (elementStartY + deltaY) + "px";
+        }
+
+        function dragWindowStop() {
+            document.removeEventListener('mousemove', dragWindowAction);
+            document.removeEventListener('mouseup', dragWindowStop);
+            dragElement = null;
+        }
+
+        setInterval(function () {
+            const cpu = document.getElementById("cpu-value");
+            const mem = document.getElementById("memory-value");
+            if (cpu && mem) {
+                const state = window.simState;
+                let cpuBase = 8;
+                let memBase = 42;
+                if (state && state.malware_installed) {
+                    cpuBase += 25;
+                    memBase += 5;
+                }
+                cpu.innerHTML = Math.floor(Math.random() * 8 + cpuBase) + "%";
+                mem.innerHTML = Math.floor(Math.random() * 3 + memBase) + "%";
+            }
+        }, 2000);
+
+        function showExfilAlert() {
+            const popup = document.getElementById("exfil-popup");
+            if (popup) popup.style.display = "block";
+        }
+
+        function closeExfilAlert() {
+            const popup = document.getElementById("exfil-popup");
+            if (popup) popup.style.display = "none";
+        }
+
+        async function remediate(vector) {
+            try {
+                const res = await fetch("/api/lab/execute_exploit", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ vector: vector })
+                });
+                const data = await res.json();
+                if (data.status === "success") {
+                    window.simState = data.state;
+                    refreshExplorerView();
+                    refreshChromeView();
+                    refreshTaskManagerView();
+                    refreshDefenderView();
+                } else {
+                    alert("Remediation execution failed: " + data.message);
+                }
+            } catch (e) {
+                alert("Network error running remediation: " + e.message);
+            }
+        }
+
+        async function refreshExplorerView() {
+            const rows = document.getElementById("file-system-rows");
+            if (!rows) return;
+            try {
+                const res = await fetch("/api/lab/files");
+                const data = await res.json();
+                if (data && data.files) {
+                    rows.innerHTML = "";
+                    data.files.forEach(f => {
+                        let statusText = "Safe";
+                        let statusColor = "#10b981";
+                        let typeText = "Text Document";
+
+                        if (f.endsWith(".locked")) {
+                            statusText = "Locked";
+                            statusColor = "#ef4444";
+                            typeText = "Encrypted File";
+                        } else if (f.includes("backdoor")) {
+                            statusText = "Malicious";
+                            statusColor = "#f59e0b";
+                            typeText = "System Process";
+                        } else if (f.endsWith(".html")) {
+                            typeText = "HTML Page";
+                        } else if (f.endsWith(".csv")) {
+                            typeText = "Spreadsheet";
+                        }
+
+                        rows.innerHTML += `
+                        <tr class="file-item-row" onclick="openFileDocument('${f}')">
+                            <td>${f}</td>
+                            <td>${typeText}</td>
+                            <td style="color:${statusColor}; font-weight:bold;">${statusText}</td>
+                        </tr>
+                    `;
+                    });
+                }
+            } catch (e) {
+                console.error("Failed to read explorer files:", e);
+            }
+        }
+
+        function refreshTaskManagerView() {
+            const tbody = document.getElementById("task-manager-processes");
+            if (!tbody) return;
+            const state = window.simState;
+
+            let html = `
+            <tr><td>Explorer.exe</td><td>1%</td><td>System</td></tr>
+            <tr><td>Chrome.exe</td><td>2%</td><td>System</td></tr>
+            <tr><td>Defender.exe</td><td>1%</td><td>System</td></tr>
+        `;
+
+            if (state && state.malware_installed) {
+                html += `
+                <tr style="background-color: rgba(239, 68, 68, 0.15);">
+                    <td style="color:#ef4444; font-weight:bold;"><i class="fa-solid fa-bug"></i> backdoor_svc.exe</td>
+                    <td style="color:#ef4444;">25%</td>
+                    <td><button class="remediate-btn" onclick="remediate('remediate_malware')">Kill Process</button></td>
+                </tr>
+            `;
+            }
+            tbody.innerHTML = html;
+        }
+
+        function refreshDefenderView() {
+            const area = document.getElementById("defender-alerts-area");
+            if (!area) return;
+            const state = window.simState;
+
+            let html = "";
+            if (state) {
+                if (state.malware_installed) {
+                    html += `
+                    <div style="background:rgba(239, 68, 68, 0.15); border:1px solid #ef4444; border-radius:4px; padding:10px; font-size:11px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <strong>Trojan:Win32/BackdoorFound</strong><br>
+                            Rogue backdoor_svc.exe detected in storage node.
+                        </div>
+                        <button class="remediate-btn" onclick="remediate('remediate_malware')">Quarantine</button>
+                    </div>
+                `;
+                }
+                if (state.privilege_escalated) {
+                    html += `
+                    <div style="background:rgba(245, 158, 11, 0.15); border:1px solid #f59e0b; border-radius:4px; padding:10px; font-size:11px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <strong>Alert: Unprivileged Elevation</strong><br>
+                            Token elevated to NT AUTHORITY\\SYSTEM.
+                        </div>
+                        <button class="remediate-btn" onclick="remediate('remediate_privesc')">Revoke SYSTEM</button>
+                    </div>
+                `;
+                }
+            }
+            area.innerHTML = html;
+        }
+
+        function refreshChromeView() {
+            const canvas = document.getElementById("chrome-canvas");
+            if (!canvas) return;
+            const state = window.simState;
+            const url = document.getElementById("chrome-url-field").value.trim().toLowerCase();
+
+            if (!state) return;
+
+            if (state.ransomware_active && !url.startsWith("chrome://")) {
+                canvas.style.background = "#7f1d1d";
+                canvas.style.color = "#fff";
+                canvas.innerHTML = `
+                <div style="text-align: center; padding-top: 60px; font-family: monospace;">
+                    <h1 style="font-size: 30px; color:#ef4444; margin-bottom:15px;"><i class="fa-solid fa-lock"></i> SYSTEM ENCRYPTED</h1>
+                    <p style="font-size: 13px; max-width: 440px; margin: 0 auto; line-height: 1.5; color:#cbd5e1;">All system directories and file grids have been locked by Ransomware. Restore system backups via the console recovery wizard.</p>
+                </div>
+            `;
+                return;
+            }
+
+            if (url === "chrome://newtab" || url === "") {
+                canvas.style.background = "#fff";
+                canvas.style.color = "#000";
+                canvas.innerHTML = `
+                <div style="padding:40px 20px; text-align:center;">
+                    <i class="fa-brands fa-chrome" style="font-size:48px; color:#4285f4; margin-bottom:15px;"></i>
+                    <p style="color:#5f6368; font-size:14px;">Welcome to Chrome. Search target addresses below to browse:</p>
+                    <p style="color:#8ab4f8; font-size:12px; margin-top:8px; cursor:pointer;" onclick="loadChromeURL('securecorp.com')">securecorp.com</p>
+                    <p style="color:#8ab4f8; font-size:12px; margin-top:4px; cursor:pointer;" onclick="loadChromeURL('google.com')">google.com</p>
+                </div>`;
+            } else if (url.includes("google.com/search")) {
+                canvas.style.background = "#fff";
+                canvas.style.color = "#000";
+                
+                const queryParam = url.split("?q=")[1] || "";
+                const query = decodeURIComponent(queryParam).replace(/\+/g, " ").toLowerCase();
+                
+                let resultsHTML = `
+                    <div style="padding:15px; text-align:left; background:#fff; color:#000;">
+                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px; border-bottom:1px solid #ebebeb; padding-bottom:12px;">
+                            <span style="font-family: system-ui, sans-serif; font-size:18px; font-weight:bold; cursor:pointer;" onclick="loadChromeURL('google.com')">
+                                <span style="color:#4285f4">G</span><span style="color:#ea4335">o</span><span style="color:#fbbc05">o</span><span style="color:#4285f4">g</span><span style="color:#34a853">l</span><span style="color:#ea4335">e</span>
+                            </span>
+                            <input type="text" id="chrome-google-search-results-input" style="flex:1; max-width:240px; padding:6px 12px; border-radius:18px; border:1px solid #dfe1e5; outline:none; font-size:12px; color:#000; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" value="${escapeHtml(query)}" onkeypress="handleGoogleResultsSearchKeyPress(event)">
+                        </div>
+                        <div style="font-size:11px; color:#70757a; font-family:sans-serif; margin-bottom:12px;">About 1,230 results for "${escapeHtml(query)}"</div>
+                `;
+                
+                if (query.includes("securecorp") || query.includes("portal") || query.includes("login") || query.includes("corporate")) {
+                    resultsHTML += `
+                        <div style="margin-bottom:20px; text-align:left; font-family:sans-serif;">
+                            <a href="#" onclick="loadChromeURL('securecorp.com'); return false;" style="font-size:16px; color:#1a0dab; text-decoration:underline; display:block;">SecureCorp Public Entry Node Portal</a>
+                            <div style="color:#006621; font-size:12px;">http://securecorp.com</div>
+                            <div style="font-size:12px; color:#545454; margin-top:2px;">Official entry portal for SecureCorp corporate services and storage mounts.</div>
+                        </div>
+                        <div style="margin-bottom:20px; text-align:left; font-family:sans-serif;">
+                            <a href="#" onclick="loadChromeURL('securecorp.com/secure_login.html'); return false;" style="font-size:16px; color:#1a0dab; text-decoration:underline; display:block;">SecureCorp Single Sign-On Authentication</a>
+                            <div style="color:#006621; font-size:12px;">http://securecorp.com/secure_login.html</div>
+                            <div style="font-size:12px; color:#545454; margin-top:2px;">SSO credentials workspace authentication gate. Access restricted to SECURECORP employees.</div>
+                        </div>
+                    `;
+                } else if (query.includes("cyberforge") || query.includes("exploit") || query.includes("hack")) {
+                    resultsHTML += `
+                        <div style="margin-bottom:20px; text-align:left; font-family:sans-serif;">
+                            <a href="#" style="font-size:16px; color:#1a0dab; text-decoration:underline; display:block;">CyberForge Cyber Security Simulation Framework</a>
+                            <div style="color:#006621; font-size:12px;">https://github.com/cyberforge</div>
+                            <div style="font-size:12px; color:#545454; margin-top:2px;">An expert educational laboratory modeling attack vectors, defacement scripts, and cryptolocks in sandboxed local file systems.</div>
+                        </div>
+                    `;
+                } else {
+                    resultsHTML += `
+                        <div style="margin-bottom:20px; text-align:left; font-family:sans-serif;">
+                            <div style="font-size:13px; color:#222; font-weight:bold; margin-bottom:8px;">No official links found. Did you mean?</div>
+                            <a href="#" onclick="loadChromeURL('securecorp.com'); return false;" style="font-size:15px; color:#1a0dab; text-decoration:underline; display:block;">SecureCorp Corporate Node Portal</a>
+                            <div style="color:#006621; font-size:11px;">http://securecorp.com</div>
+                        </div>
+                    `;
+                }
+                
+                resultsHTML += `
+                        <div style="margin-top:30px; font-family:sans-serif; text-align:center; color:#5f6368; font-size:12px;">
+                            <span style="font-weight:bold; font-size:14px; color:#4285f4;">G</span>
+                            <span style="font-weight:bold; font-size:14px; color:#ea4335;">o</span>
+                            <span style="font-weight:bold; font-size:14px; color:#fbbc05;">o</span>
+                            <span style="font-weight:bold; font-size:14px; color:#fbbc05;">o</span>
+                            <span style="font-weight:bold; font-size:14px; color:#fbbc05;">o</span>
+                            <span style="font-weight:bold; font-size:14px; color:#fbbc05;">o</span>
+                            <span style="font-weight:bold; font-size:14px; color:#4285f4;">g</span>
+                            <span style="font-weight:bold; font-size:14px; color:#34a853;">l</span>
+                            <span style="font-weight:bold; font-size:14px; color:#ea4335;">e</span><br>
+                            <span style="color:#4285f4; cursor:pointer; text-decoration:underline; font-size:11px;" onclick="loadChromeURL('google.com')">Back to Search Home</span>
+                        </div>
+                    </div>
+                `;
+                canvas.innerHTML = resultsHTML;
+            } else if (url.includes("google.com")) {
+                canvas.style.background = "#fff";
+                canvas.style.color = "#000";
+                canvas.innerHTML = `
+                <div style="text-align:center; padding-top:60px;">
+                    <h1 style="font-family: system-ui, sans-serif; font-size:42px; margin-bottom:20px;">
+                        <span style="color:#4285f4">G</span><span style="color:#ea4335">o</span><span style="color:#fbbc05">o</span><span style="color:#4285f4">g</span><span style="color:#34a853">l</span><span style="color:#ea4335">e</span>
+                    </h1>
+                    <input type="text" id="chrome-google-search-input" style="width:320px; padding:10px 18px; border-radius:24px; border:1px solid #dfe1e5; outline:none; box-shadow: 0 1px 6px rgba(32,33,36,0.28);" placeholder="Search Google or type a URL" onkeypress="handleGoogleSearchKeyPress(event)">
+                </div>`;
+            } else if (url.includes("securecorp.com/secure_login.html")) {
+                if (state.phishing_kit) {
+                    canvas.style.background = "#f1f5f9";
+                    canvas.style.color = "#0f172a";
+                    canvas.innerHTML = `
+                    <div style="padding: 20px; max-width: 320px; margin: 15px auto; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; text-align:left; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #f1f5f9; padding-bottom:8px;">
+                            <h4 style="color:#0078d4; margin:0; font-family:sans-serif;">SecureCorp Authentication SSO</h4>
+                            <span style="background:#ef4444; color:#fff; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:10px; cursor:pointer;" onclick="remediate('remediate_phishing')">Takedown Form</span>
+                        </div>
+                        <p style="font-size:10px; color:#ef4444; font-weight:bold; margin-bottom:10px;"><i class="fa-solid fa-triangle-exclamation"></i> WARNING: Phishing kit detected hosting on this page!</p>
+                        <label style="font-size:11px; display:block; margin-bottom:4px; font-weight:bold;">SSO Username</label>
+                        <input type="text" style="width:100%; padding:6px; margin-bottom:10px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px;" placeholder="username@securecorp.com" disabled>
+                        <label style="font-size:11px; display:block; margin-bottom:4px; font-weight:bold;">Password</label>
+                        <input type="password" style="width:100%; padding:6px; margin-bottom:12px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px;" placeholder="••••••••" disabled>
+                        <button style="width:100%; background:#0078d4; color:#fff; padding:8px; border:none; border-radius:4px; font-weight:bold; cursor:not-allowed; font-size:12px;" disabled>Login Securely</button>
+                    </div>
+                `;
+                } else {
+                    canvas.style.background = "#fff";
+                    canvas.style.color = "#000";
+                    canvas.innerHTML = `
+                    <div style="padding: 50px; text-align: center; color: #5f6368; font-family: sans-serif;">
+                        <h1 style="font-size: 64px; margin:0 0 10px 0; color:#cbd5e1;">404</h1>
+                        <p style="font-size: 14px;">This file secure_login.html can’t be reached. File not found.</p>
+                    </div>
+                `;
+                }
+            } else if (url.includes("securecorp.com")) {
+                canvas.style.background = "#fff";
+                canvas.style.color = "#000";
+                if (state.defaced) {
+                    canvas.style.background = "#000";
+                    canvas.style.color = "#ff3366";
+                    canvas.innerHTML = `
+                    <div style="text-align: center; height:100%; padding-top: 60px; font-family: monospace;">
+                        <h1 style="font-size: 28px; margin-bottom: 12px; text-shadow: 0 0 8px #ff3366;">🚫 HACKED BY CYBERFORGE 🚫</h1>
+                        <p style="font-size: 12px; max-width: 420px; margin:0 auto; line-height:1.5;">YOUR WEB PORTAL SECURITY HAS BEEN BREACHED AND LAYOUT HAS BEEN DEFACED.</p>
+                        <button class="remediate-btn" onclick="remediate('remediate_defacement')" style="margin-top:15px; padding:6px 15px; font-size:11px;">Restore Web Page</button>
+                    </div>
+                `;
+                } else {
+                    canvas.innerHTML = `
+                    <div style="padding: 20px; color: #0f172a; text-align:left;">
+                        <h2 style="color: #0078d4; margin:0 0 8px 0; display:flex; align-items:center; gap:8px; font-family:sans-serif;"><i class="fa-solid fa-building-shield"></i> SecureCorp Public Portal</h2>
+                        <div style="background:#f0fdf4; border-left:4px solid #10b981; padding:8px; font-size:11px; margin-bottom:15px; color:#166534;">
+                            <i class="fa-solid fa-circle-check"></i> System Operational. All Web services are working correctly.
+                        </div>
+                        <p style="font-size:12px; color:#475569; line-height:1.5;">Welcome to the corporate entry node. Public file registries can be accessed internally via desktop explorer mounts. Phishing alerts and defacement scanner triggers are active.</p>
+                        
+                        <div style="margin-top:15px; border-top:1px solid #e2e8f0; padding-top:12px;">
+                            <span style="font-size:10px; font-weight:bold; color:#64748b; text-transform:uppercase;">Quick Links:</span><br>
+                            <span style="color:#0078d4; font-size:11px; cursor:pointer; text-decoration:underline;" onclick="loadChromeURL('securecorp.com/secure_login.html')">securecorp.com/secure_login.html</span>
+                        </div>
+                    </div>
+                `;
+                }
+            } else {
+                canvas.style.background = "#fff";
+                canvas.style.color = "#000";
+                canvas.innerHTML = `
+                <div style="padding: 40px; text-align: center; color: #5f6368; font-family: sans-serif;">
+                    <i class="fa-solid fa-globe" style="font-size:48px; color:#cbd5e1; margin-bottom:15px;"></i>
+                    <p style="font-size:13px;">Cannot resolve domain: ${url}</p>
+                </div>
+            `;
+            }
+        }
+
+        function handleGoogleSearchKeyPress(e) {
+            if (e.key === "Enter") {
+                const query = e.target.value.trim();
+                loadChromeURL("google.com/search?q=" + encodeURIComponent(query));
+            }
+        }
+
+        async function checkTelemetryStateMap() {
+            try {
+                const res = await fetch('/api/simulation/status');
+                const state = await res.json();
+                window.simState = state;
+
+                const threatCount = document.getElementById("threat-count");
+                const avLabel = document.getElementById("av-label");
+                const shieldIcon = document.getElementById("shield-status-icon");
+                const headlineTxt = document.getElementById("defender-headline-txt");
+                const lockoutScreen = document.getElementById("lockout-screen");
+                const netStatus = document.getElementById("network-status");
+
+                let count = 0;
+                if (state.malware_installed) count++;
+                if (state.privilege_escalated) count++;
+                if (state.ransomware_active) count += 5;
+
+                if (threatCount) threatCount.innerHTML = count;
+
+                if (state.ransomware_active) {
+                    if (avLabel) { avLabel.innerHTML = "COMPROMISED"; avLabel.style.color = "#ef4444"; }
+                    if (shieldIcon) { shieldIcon.className = "fa-solid fa-triangle-exclamation"; shieldIcon.style.color = "#ef4444"; }
+                    if (headlineTxt) headlineTxt.innerText = "Ransomware Outbreak Active";
+                    if (lockoutScreen) lockoutScreen.style.display = "block";
+                } else {
+                    if (lockoutScreen) lockoutScreen.style.display = "none";
+                    if (state.malware_installed || state.privilege_escalated) {
+                        if (avLabel) { avLabel.innerHTML = "WARNING"; avLabel.style.color = "#f59e0b"; }
+                        if (shieldIcon) { shieldIcon.className = "fa-solid fa-shield-virus"; shieldIcon.style.color = "#f59e0b"; }
+                        if (headlineTxt) headlineTxt.innerText = "Active Threat Flagged";
+                    } else {
+                        if (avLabel) { avLabel.innerHTML = "Running"; avLabel.style.color = "#10b981"; }
+                        if (shieldIcon) { shieldIcon.className = "fa-solid fa-circle-check"; shieldIcon.style.color = "#10b981"; }
+                        if (headlineTxt) headlineTxt.innerText = "Real-Time Shields Running";
+                    }
+                }
+
+                if (state.data_exfiltrated) {
+                    if (netStatus) {
+                        netStatus.innerHTML = `<span style="color:#ef4444; font-weight:bold; cursor:pointer;" onclick="showExfilAlert()"><i class="fa-solid fa-triangle-exclamation"></i> Network Alert</span>`;
+                    }
+                } else {
+                    if (netStatus) {
+                        netStatus.innerHTML = `<i class="fa-solid fa-wifi"></i> 192.168.24.131`;
+                    }
+                }
+
+                refreshExplorerView();
+                refreshChromeView();
+                refreshTaskManagerView();
+                refreshDefenderView();
+
+            } catch (e) {
+                console.error("Coordinated telemetry sync connection link error:", e);
+            }
+        }
+        setInterval(checkTelemetryStateMap, 2000);
+        checkTelemetryStateMap();
+    </script>
+</body>
+
+</html>

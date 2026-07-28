@@ -1,0 +1,104 @@
+CYBERFORGE SECURITY OPERATIONS CENTER - USER REPORT
+
+USER SUMMARY & PERFORMANCE SCORES
+Parameter,Value
+Username,TA
+Email Address,xyz@gmail.com
+Total Actions Logged,88
+Account Security Score,12/100
+Total Academy XP Gained,0 XP
+
+ACADEMY TRAINING PROGRESS
+Academy Lab Title,XP Gained,Flag Captured
+Total Academy XP,0 XP
+
+TASKS PERFORMED / ACTIVITY LOGS
+Activity Action Description,Timestamp Logged
+Generated Security Report for TA,2026-07-19 16:46:51
+Generated Security Report for TA,2026-07-19 16:46:41
+Opened Report Generator,2026-07-19 16:46:40
+Visited Dashboard,2026-07-19 16:46:36
+User Logged In,2026-07-19 16:46:36
+Opened Live Hacker Terminal Interface,2026-07-16 18:09:15
+Visited Dashboard,2026-07-16 18:09:11
+Opened Victim Interface,2026-07-16 18:07:09
+Opened Victim Interface,2026-07-16 18:07:08
+Opened Live Hacker Terminal Interface,2026-07-16 18:06:24
+Generated Security Report,2026-07-16 18:05:13
+Generated Security Report,2026-07-16 18:05:12
+Opened Report Generator,2026-07-16 18:05:10
+Opened Live Hacker Terminal Interface,2026-07-16 18:02:54
+Visited Dashboard,2026-07-16 18:02:51
+Opened Victim Interface,2026-07-16 18:01:44
+Defensive Remediation: Quarantined and deleted 'backdoor_svc.exe',2026-07-16 18:01:24
+Simulated Data Exfiltration exploit: Staged mock records for download,2026-07-16 18:01:13
+Simulated Malware & Backdoor Installation exploit: Placed backdoor_svc.exe,2026-07-16 18:01:00
+Simulated SEO Spam & Defacement exploit: Modified index.html,2026-07-16 18:00:47
+Reset simulation lab state,2026-07-16 18:00:41
+Opened Victim Interface,2026-07-16 18:00:27
+Simulated SEO Spam & Defacement exploit: Modified index.html,2026-07-16 18:00:19
+Opened Live Hacker Terminal Interface,2026-07-16 18:00:16
+Opened Victim Interface,2026-07-16 18:00:08
+Visited Dashboard,2026-07-16 18:00:05
+Simulated Local Privilege Escalation: Elevated active session token to SYSTEM,2026-07-16 17:57:03
+Defensive Remediation: Restored target storage files from backup snapshot,2026-07-16 17:56:59
+Defensive Remediation: Restored target storage files from backup snapshot,2026-07-16 17:56:58
+Simulated Ransomware Cryptolock: Encrypted target files with .locked extension,2026-07-16 17:56:52
+Simulated Data Exfiltration exploit: Staged mock records for download,2026-07-16 17:56:30
+Simulated Data Exfiltration exploit: Staged mock records for download,2026-07-16 17:56:29
+Simulated Malware & Backdoor Installation exploit: Placed backdoor_svc.exe,2026-07-16 17:56:21
+Simulated Phishing exploit: Hosted fake login page,2026-07-16 17:56:15
+Reset simulation lab state,2026-07-16 17:56:14
+Opened Victim Interface,2026-07-16 17:55:31
+Visited Dashboard,2026-07-16 17:55:27
+Simulated Terminal Deletion: Deleted file 'passwords.txt',2026-07-16 17:52:53
+Simulated Terminal Deletion: Deleted file 'config.json',2026-07-16 17:52:42
+Opened Live Hacker Terminal Interface,2026-07-16 17:52:11
+Opened Victim Interface,2026-07-16 17:52:04
+Reset simulation lab state,2026-07-16 17:51:36
+Opened Live Hacker Terminal Interface,2026-07-16 17:51:33
+Opened Victim Interface,2026-07-16 17:51:00
+Opened Victim Interface,2026-07-16 17:47:37
+Simulated Terminal Deletion: Deleted file 'config.json',2026-07-16 17:47:25
+Opened Live Hacker Terminal Interface,2026-07-16 17:46:58
+Visited Dashboard,2026-07-16 17:46:55
+Visited Dashboard,2026-07-16 17:46:54
+Opened Live Hacker Terminal Interface,2026-07-16 17:35:46
+Opened Victim Interface,2026-07-16 17:35:43
+Opened Live Hacker Terminal Interface,2026-07-16 17:30:58
+Opened Packet Sniffer,2026-07-16 17:30:55
+Opened Live Hacker Terminal Interface,2026-07-16 17:30:08
+Opened Live Hacker Terminal Interface,2026-07-16 17:30:08
+Opened Live Hacker Terminal Interface,2026-07-16 17:30:06
+Opened Hacker Interface,2026-07-16 17:27:47
+Opened Hacker Interface,2026-07-16 17:27:45
+Visited Dashboard,2026-07-16 17:27:41
+Opened Cyber Defense Academy,2026-07-16 17:27:06
+Stopped Packet Capture,2026-07-16 17:27:02
+Started Packet Capture,2026-07-16 17:26:59
+Opened Packet Sniffer,2026-07-16 17:26:58
+Opened Password Analyzer,2026-07-16 17:26:54
+Opened Victim Interface,2026-07-16 17:26:51
+Opened Hacker Interface,2026-07-16 17:26:48
+Opened Hacker Interface,2026-07-16 17:22:34
+Opened Hacker Interface,2026-07-16 17:21:47
+Triggered Lab Simulation Event Loop: none,2026-07-16 17:19:31
+Opened Hacker Interface,2026-07-16 17:19:26
+Triggered Lab Simulation Event Loop: none,2026-07-16 17:17:32
+Opened Hacker Interface,2026-07-16 17:17:24
+Opened Victim Interface,2026-07-16 17:17:18
+Opened Victim Interface,2026-07-16 17:00:42
+Visited Dashboard,2026-07-16 17:00:33
+Triggered Lab Simulation Event Loop: recon,2026-07-16 16:38:22
+Opened Hacker Interface,2026-07-16 16:38:18
+Stopped Packet Capture,2026-07-16 16:37:58
+Started Packet Capture,2026-07-16 16:37:52
+Opened Packet Sniffer,2026-07-16 16:37:50
+Opened Password Analyzer,2026-07-16 16:37:44
+Opened Cyber Defense Academy,2026-07-16 16:37:19
+Opened Report Generator,2026-07-16 16:37:15
+Opened Victim Interface,2026-07-16 16:36:49
+Opened Hacker Interface,2026-07-16 16:36:45
+Visited Dashboard,2026-07-16 16:36:40
+User Logged In,2026-07-16 16:36:40
+New account created,2026-07-16 16:36:32

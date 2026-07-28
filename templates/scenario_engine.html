@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberForge - Scenario Engine</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+    <style>
+        :root {
+            --bg-deep: #050814;
+            --bg-card: #0b0f19;
+            --bg-sidebar: #020617;
+            --border-color: #1f2937;
+            --text-primary: #f3f4f6;
+            --text-muted: #9ca3af;
+            --cyan-glow: #00ff99;
+            --alert-red: #ff3366;
+            --warning-amber: #facc15;
+            --info-blue: #38bdf8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR STYLING */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            flex-shrink: 0;
+            overflow-y: auto;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--cyan-glow);
+            margin-bottom: 30px;
+        }
+
+        .nav-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 25px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background-color: rgba(0, 255, 153, 0.08);
+            color: var(--cyan-glow);
+        }
+
+        .infra-section {
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+
+        .infra-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .infra-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--cyan-glow);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--cyan-glow);
+        }
+
+        /* MAIN CONTENT STYLE */
+        .main-canvas {
+            flex-grow: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .canvas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .header-left h1 {
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .header-left p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* LAYOUT GRID */
+        .engine-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 20px;
+        }
+
+        .card-panel {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .panel-title {
+            font-size: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* SCENARIO LISTING */
+        .scenario-box {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.02);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .scenario-box:hover {
+            border-color: var(--cyan-glow);
+            background-color: rgba(0, 255, 153, 0.02);
+        }
+
+        .scenario-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .difficulty-badge {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .difficulty-badge.easy { background: rgba(56, 189, 248, 0.2); color: var(--info-blue); }
+        .difficulty-badge.medium { background: rgba(250, 204, 21, 0.2); color: var(--warning-amber); }
+        .difficulty-badge.hard { background: rgba(255, 51, 102, 0.2); color: var(--alert-red); }
+
+        .btn {
+            background: linear-gradient(135deg, #00ff99 0%, #00cc77 100%);
+            border: none;
+            color: #000;
+            padding: 8px 16px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover { opacity: 0.9; }
+        .btn.secondary {
+            background: #1e293b;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        .btn.danger {
+            background: var(--alert-red);
+            color: white;
+        }
+        .btn:disabled {
+            background: #334155;
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        /* ACTIVE SCENARIO PANEL */
+        .step-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            font-size: 13px;
+        }
+
+        .step-item.active {
+            border-color: var(--cyan-glow);
+            background-color: rgba(0, 255, 153, 0.05);
+        }
+
+        .step-item.completed {
+            border-color: var(--info-blue);
+            opacity: 0.7;
+        }
+
+        .step-number-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #1f2937;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+
+        .step-item.active .step-number-circle {
+            background: var(--cyan-glow);
+            color: #000;
+        }
+
+        .step-item.completed .step-number-circle {
+            background: var(--info-blue);
+            color: #000;
+        }
+
+        .form-control {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-control label {
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: bold;
+            color: var(--text-muted);
+        }
+
+        .form-control input, .form-control textarea {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            border-radius: 4px;
+            color: white;
+            font-size: 13px;
+        }
+
+        .form-control input:focus, .form-control textarea:focus {
+            outline: none;
+            border-color: var(--cyan-glow);
+        }
+
+        .active-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .evidence-collected-list {
+            margin-top: 15px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+        }
+
+        .evidence-card {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.01);
+            padding: 10px;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .evidence-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            color: var(--cyan-glow);
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar">
+        <div class="logo-area">
+            <i class="fa-solid fa-shield-halved"></i> CyberForge
+        </div>
+
+        <nav class="nav-group">
+            <a href="/dashboard" class="nav-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+            <a href="/hacker" class="nav-item"><i class="fa-solid fa-terminal"></i> Hacker Interface</a>
+            <a href="/victim" class="nav-item"><i class="fa-solid fa-desktop"></i> Victim Interface</a>
+            <a href="/labs/defensive" class="nav-item"><i class="fa-solid fa-flask"></i> Threat Lab Center</a>
+            <a href="/packet_sniffer" class="nav-item"><i class="fa-solid fa-network-wired"></i> Packet Sniffer</a>
+            <a href="/password_analyzer" class="nav-item"><i class="fa-solid fa-key"></i> Password Analyzer</a>
+            <a href="/ai_copilot" class="nav-item"><i class="fa-solid fa-robot"></i> AI Cyber Copilot</a>
+            <a href="/academy" class="nav-item"><i class="fa-solid fa-graduation-cap"></i> Cyber Defense Academy</a>
+            <a href="/report" class="nav-item"><i class="fa-solid fa-file-pdf"></i> Generate Report</a>
+            <a href="/awareness" class="nav-item"><i class="fa-solid fa-graduation-cap"></i> Cyber Safety Awareness</a>
+            
+            <!-- ADDONS -->
+            <a href="/scenario_engine" class="nav-item active"><i class="fa-solid fa-gamepad"></i> Scenario Engine</a>
+            <a href="/gamification" class="nav-item"><i class="fa-solid fa-trophy"></i> Gamification</a>
+            <a href="/siem_center" class="nav-item"><i class="fa-solid fa-server"></i> SIEM Center</a>
+            <a href="/ai_mentor" class="nav-item"><i class="fa-solid fa-graduation-cap"></i> AI Mentor Mode</a>
+            <a href="/report_center" class="nav-item"><i class="fa-solid fa-folder-open"></i> Report Center</a>
+            <a href="/logout" class="nav-item"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </nav>
+
+        <div class="infra-section">
+            <div class="infra-title">Infrastructure</div>
+            <div class="infra-item"><div class="status-dot"></div> Kali Linux</div>
+            <div class="infra-item"><div class="status-dot"></div> Metasploitable</div>
+            <div class="infra-item"><div class="status-dot"></div> Flask Server</div>
+            <div class="infra-item"><div class="status-dot"></div> SQLite Database</div>
+        </div>
+    </div>
+
+    <!-- MAIN WINDOW -->
+    <div class="main-canvas">
+        <div class="canvas-header">
+            <div class="header-left">
+                <h1>Interactive Cyber Range Scenarios</h1>
+                <p>Simulate attacks, collect indicators of compromise, and test response workflows</p>
+            </div>
+        </div>
+
+        <div class="engine-grid">
+            <!-- LEFT PANEL: AVAILABLE SCENARIOS -->
+            <div class="card-panel">
+                <div class="panel-title"><i class="fa-solid fa-scroll"></i> Scenarios Library</div>
+                
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    {% for sc in scenarios %}
+                    <div class="scenario-box">
+                        <div class="scenario-header">
+                            <h3 style="font-size: 15px;">{{ sc.name }}</h3>
+                            <span class="difficulty-badge {{ sc.difficulty.lower() }}">{{ sc.difficulty }}</span>
+                        </div>
+                        <p style="font-size: 13px; color: var(--text-muted);">{{ sc.objectives }}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+                            <span style="font-size: 11px; color: var(--text-muted);"><i class="fa-solid fa-clock"></i> Time Limit: {{ sc.time_limit // 60 }} mins</span>
+                            <button class="btn start-btn" data-id="{{ sc.scenario_id }}" onclick="startScenario('{{ sc.scenario_id }}')">
+                                <i class="fa-solid fa-play"></i> Start Scenario
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: ACTIVE SCENARIO PANEL -->
+            <div class="card-panel" id="active-panel">
+                <div class="panel-title"><i class="fa-solid fa-gears"></i> Active Range Operations</div>
+                
+                <div id="no-active-state" style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
+                    <i class="fa-solid fa-shield-halved" style="font-size: 40px; margin-bottom: 15px; opacity: 0.4;"></i>
+                    <p>No active range scenario running. Select and launch a scenario from the library.</p>
+                </div>
+
+                <div id="active-state" style="display: none; flex-direction: column; gap: 20px;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h2 id="active-title" style="color: var(--cyan-glow); font-size: 18px;"></h2>
+                            <span id="active-timer" style="font-family: monospace; font-size: 16px; font-weight: bold; color: var(--warning-amber);">00:00</span>
+                        </div>
+                        <p id="active-objectives" style="font-size: 13px; color: var(--text-muted); margin-top: 5px;"></p>
+                    </div>
+
+                    <!-- Steps Timeline -->
+                    <div>
+                        <h3 style="font-size: 13px; text-transform: uppercase; margin-bottom: 8px;">Incident Timeline / Steps</h3>
+                        <div class="step-list" id="active-steps"></div>
+                    </div>
+
+                    <!-- Evidence Collection Form -->
+                    <div style="border-top: 1px solid var(--border-color); padding-top: 15px;">
+                        <h3 style="font-size: 13px; text-transform: uppercase; margin-bottom: 10px; color: var(--cyan-glow);">Submit Step Evidence</h3>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <div class="form-control">
+                                <label>Indicator Title / Name</label>
+                                <input type="text" id="evidence-title" placeholder="e.g. invoice.pdf.exe, Outbound IP connection details">
+                            </div>
+                            <div class="form-control">
+                                <label>Description / Verification Findings</label>
+                                <textarea id="evidence-desc" rows="3" placeholder="Describe the indicator details, threat logs, or file hashes found..."></textarea>
+                            </div>
+                            <button class="btn" onclick="submitEvidence()"><i class="fa-solid fa-file-invoice"></i> Verify & Submit Evidence</button>
+                        </div>
+                    </div>
+
+                    <!-- Notes Area -->
+                    <div style="border-top: 1px solid var(--border-color); padding-top: 15px;">
+                        <div class="form-control">
+                            <label>Analyst Investigation Notes</label>
+                            <textarea id="analyst-notes" rows="4" placeholder="Write down your findings, temporary tokens, or notes during this scenario..." oninput="autoSaveNotes()"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Controls -->
+                    <div class="active-controls" style="border-top: 1px solid var(--border-color); padding-top: 15px;">
+                        <button class="btn secondary" id="pause-btn" onclick="pauseScenario()"><i class="fa-solid fa-pause"></i> Pause</button>
+                        <button class="btn secondary" id="resume-btn" style="display:none;" onclick="resumeScenario()"><i class="fa-solid fa-play"></i> Resume</button>
+                        <button class="btn danger" onclick="endScenario()"><i class="fa-solid fa-stop"></i> End Scenario</button>
+                    </div>
+
+                    <!-- Evidence list -->
+                    <div class="evidence-collected-list">
+                        <h3 style="font-size: 13px; text-transform: uppercase; margin-bottom: 8px;">Evidence Collection Locker</h3>
+                        <div id="collected-evidence"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let timerInterval = null;
+        let elapsedSeconds = 0;
+        let maxTimeSeconds = 600;
+        let isPaused = false;
+
+        async function fetchStatus() {
+            const res = await fetch("/api/scenario/status");
+            const data = await res.json();
+            if (data.status === "success") {
+                showActiveScenario(data);
+            } else {
+                showInactive();
+            }
+        }
+
+        function showActiveScenario(data) {
+            document.getElementById("no-active-state").style.display = "none";
+            document.getElementById("active-state").style.display = "flex";
+            
+            const sc = data.scenario;
+            document.getElementById("active-title").innerText = sc.scenario_name;
+            document.getElementById("active-objectives").innerText = sc.objectives;
+            document.getElementById("analyst-notes").value = sc.notes || "";
+            
+            elapsedSeconds = sc.elapsed_time || 0;
+            maxTimeSeconds = sc.time_limit || 600;
+            isPaused = (sc.status === 'PAUSED');
+
+            // Render steps
+            const stepBox = document.getElementById("active-steps");
+            stepBox.innerHTML = "";
+            data.steps.forEach(step => {
+                const item = document.createElement("div");
+                item.className = "step-item";
+                if (step.step_number < sc.current_step) {
+                    item.className += " completed";
+                } else if (step.step_number === sc.current_step) {
+                    item.className += " active";
+                }
+                
+                item.innerHTML = `
+                    <div class="step-number-circle">${step.step_number}</div>
+                    <div>
+                        <div style="font-weight:bold;">${step.title}</div>
+                        <div style="color:var(--text-muted); font-size:11px;">${step.description}</div>
+                    </div>
+                `;
+                stepBox.appendChild(item);
+            });
+
+            // Evidence Locker
+            const evidenceBox = document.getElementById("collected-evidence");
+            evidenceBox.innerHTML = "";
+            if (data.evidence.length === 0) {
+                evidenceBox.innerHTML = "<p style='color:var(--text-muted); font-size:11px;'>No evidence items collected yet.</p>";
+            } else {
+                data.evidence.forEach(item => {
+                    const card = document.createElement("div");
+                    card.className = "evidence-card";
+                    card.innerHTML = `
+                        <div class="evidence-header">
+                            <span>Step ${item.step_number}: ${item.title}</span>
+                            <span style="color:var(--text-muted); font-size:9px;">${item.collected_at}</span>
+                        </div>
+                        <div>${item.description}</div>
+                    `;
+                    evidenceBox.appendChild(card);
+                });
+            }
+
+            // Button visibility
+            if (isPaused) {
+                document.getElementById("pause-btn").style.display = "none";
+                document.getElementById("resume-btn").style.display = "inline-flex";
+            } else {
+                document.getElementById("pause-btn").style.display = "inline-flex";
+                document.getElementById("resume-btn").style.display = "none";
+            }
+
+            // Disable all Start Scenario buttons in library
+            document.querySelectorAll(".start-btn").forEach(btn => {
+                btn.disabled = true;
+            });
+
+            startTimer();
+        }
+
+        function showInactive() {
+            document.getElementById("no-active-state").style.display = "block";
+            document.getElementById("active-state").style.display = "none";
+            clearInterval(timerInterval);
+            document.querySelectorAll(".start-btn").forEach(btn => {
+                btn.disabled = false;
+            });
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            updateTimerDisplay();
+            if (isPaused) return;
+
+            timerInterval = setInterval(() => {
+                elapsedSeconds++;
+                updateTimerDisplay();
+                if (elapsedSeconds >= maxTimeSeconds) {
+                    clearInterval(timerInterval);
+                    alert("Time limit exceeded for this scenario!");
+                    endScenario();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const remaining = Math.max(0, maxTimeSeconds - elapsedSeconds);
+            const mins = Math.floor(remaining / 60);
+            const secs = remaining % 60;
+            document.getElementById("active-timer").innerText = 
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        async function startScenario(scenario_id) {
+            const res = await fetch("/api/scenario/start", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ scenario_id })
+            });
+            const data = await res.json();
+            if (data.status === "success") {
+                fetchStatus();
+            } else {
+                alert(data.message);
+            }
+        }
+
+        async function pauseScenario() {
+            const res = await fetch("/api/scenario/pause", { method: "POST" });
+            const data = await res.json();
+            if (data.status === "success") {
+                fetchStatus();
+            }
+        }
+
+        async function resumeScenario() {
+            const res = await fetch("/api/scenario/resume", { method: "POST" });
+            const data = await res.json();
+            if (data.status === "success") {
+                fetchStatus();
+            }
+        }
+
+        async function endScenario() {
+            if (confirm("Are you sure you want to end and abort the active range scenario?")) {
+                const res = await fetch("/api/scenario/end", { method: "POST" });
+                const data = await res.json();
+                if (data.status === "success") {
+                    fetchStatus();
+                }
+            }
+        }
+
+        async function submitEvidence() {
+            const title = document.getElementById("evidence-title").value.strip ? document.getElementById("evidence-title").value.strip() : document.getElementById("evidence-title").value;
+            const description = document.getElementById("evidence-desc").value.strip ? document.getElementById("evidence-desc").value.strip() : document.getElementById("evidence-desc").value;
+
+            if (!title || !description) {
+                alert("Please fill in both the evidence title and findings description.");
+                return;
+            }
+
+            const res = await fetch("/api/scenario/evidence", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title, description })
+            });
+            const data = await res.json();
+            alert(data.message);
+            if (data.status === "success") {
+                document.getElementById("evidence-title").value = "";
+                document.getElementById("evidence-desc").value = "";
+                fetchStatus();
+            }
+        }
+
+        let saveTimeout = null;
+        function autoSaveNotes() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(async () => {
+                const notes = document.getElementById("analyst-notes").value;
+                await fetch("/api/scenario/notes", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ notes })
+                });
+            }, 1000);
+        }
+
+        // Initialize state on page load
+        fetchStatus();
+    </script>
+</body>
+</html>

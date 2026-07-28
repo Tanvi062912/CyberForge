@@ -1,0 +1,89 @@
+CYBERFORGE SECURITY OPERATIONS CENTER - USER REPORT
+
+USER SUMMARY & PERFORMANCE SCORES
+Parameter,Value
+Username,xyz
+Email Address,xyz2@gmail.com
+Total Actions Logged,71
+Account Security Score,29/100
+Total Academy XP Gained,250 XP
+
+ACADEMY TRAINING PROGRESS
+Academy Lab Title,XP Gained,Flag Captured
+Local File Inclusion (LFI),150 XP,ACADEMY{LOCAL_FILE_INCLUSION_SUCCESS}
+SQL Injection,100 XP,ACADEMY{SQL_UNION_INJECTION_COMPLETED}
+Total Academy XP,250 XP
+
+TASKS PERFORMED / ACTIVITY LOGS
+Activity Action Description,Timestamp Logged
+Visited Dashboard,2026-07-18 15:55:25
+User Logged In,2026-07-18 15:55:25
+Completed Academy Lab: SQL Injection,2026-07-18 15:55:06
+Completed Academy Lab: Local File Inclusion (LFI),2026-07-18 15:55:06
+Visited Dashboard,2026-07-18 15:55:06
+User Logged In,2026-07-18 15:55:06
+Opened Cyber Defense Academy,2026-07-18 15:48:34
+Opened Cyber Defense Academy,2026-07-18 15:48:07
+Opened Cyber Defense Academy,2026-07-18 15:46:32
+Opened Cyber Defense Academy,2026-07-18 15:46:15
+Opened Cyber Defense Academy,2026-07-18 15:42:03
+Visited Dashboard,2026-07-18 15:41:58
+Visited Dashboard,2026-07-18 15:41:57
+Visited Dashboard,2026-07-18 15:41:57
+Visited Dashboard,2026-07-18 15:41:57
+Visited Dashboard,2026-07-18 15:41:57
+Visited Dashboard,2026-07-18 15:41:57
+Visited Dashboard,2026-07-18 15:41:56
+Visited Dashboard,2026-07-18 15:41:56
+Visited Dashboard,2026-07-18 15:41:54
+Opened Cyber Defense Academy,2026-07-18 15:41:17
+Opened Cyber Defense Academy,2026-07-18 15:37:40
+Opened Cyber Defense Academy,2026-07-18 15:36:58
+Opened Password Analyzer,2026-07-18 15:34:03
+Opened Cyber Defense Academy,2026-07-18 15:33:58
+Opened Cyber Defense Academy,2026-07-18 15:32:32
+Opened Cyber Defense Academy,2026-07-18 15:24:52
+Visited Dashboard,2026-07-18 15:14:01
+Opened Cyber Defense Academy,2026-07-18 15:13:32
+Opened Cyber Defense Academy,2026-07-18 15:06:10
+Visited Dashboard,2026-07-18 15:06:03
+User Logged In,2026-07-18 15:06:03
+Visited Dashboard,2026-07-18 15:01:14
+Generated Security Report for xyz,2026-07-18 15:00:33
+Opened Report Generator,2026-07-18 15:00:32
+Visited Dashboard,2026-07-18 15:00:28
+Visited Dashboard,2026-07-18 14:57:58
+Used Live Gemini AI Cyber Copilot,2026-07-18 14:57:16
+Used Live Gemini AI Cyber Copilot,2026-07-18 14:56:39
+Used Live Gemini AI Cyber Copilot,2026-07-18 14:56:24
+Used Live Gemini AI Cyber Copilot,2026-07-18 14:55:30
+Queried Antigravity Cyber Intelligence Copilot,2026-07-18 14:51:34
+Queried Antigravity Cyber Intelligence Copilot,2026-07-18 14:51:02
+Queried Antigravity Cyber Intelligence Copilot,2026-07-18 14:50:20
+Queried Antigravity Cyber Intelligence Copilot,2026-07-18 14:49:46
+Queried Antigravity Cyber Intelligence Copilot,2026-07-18 14:43:45
+Visited Dashboard,2026-07-18 14:35:07
+Visited Dashboard,2026-07-18 14:27:56
+Opened Cyber Defense Academy,2026-07-18 14:13:19
+Visited Dashboard,2026-07-18 14:13:11
+Visited Dashboard,2026-07-18 14:12:35
+Visited Dashboard,2026-07-18 14:12:29
+Visited Dashboard,2026-07-18 14:09:56
+Visited Dashboard,2026-07-18 14:09:55
+Visited Dashboard,2026-07-18 14:06:00
+Visited Dashboard,2026-07-18 14:04:28
+Visited Dashboard,2026-07-18 14:04:19
+Visited Dashboard,2026-07-18 14:02:36
+Visited Dashboard,2026-07-18 13:58:18
+User Logged In,2026-07-18 13:58:18
+Simulated Phishing exploit: Hosted fake login page,2026-07-18 04:13:26
+Opened Live Hacker Terminal Interface,2026-07-18 04:13:07
+Opened Victim Interface,2026-07-18 04:12:31
+Opened Cyber Defense Academy,2026-07-18 04:12:02
+Opened Cyber Defense Academy,2026-07-18 04:10:11
+Visited Dashboard,2026-07-18 04:09:59
+Opened Cyber Defense Academy,2026-07-18 04:09:19
+Opened Cyber Defense Academy,2026-07-18 04:08:50
+Visited Dashboard,2026-07-18 02:45:46
+User Logged In,2026-07-18 02:45:46
+New account created,2026-07-18 02:45:33

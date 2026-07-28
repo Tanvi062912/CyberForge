@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberForge - Security Operations Center</title>
+    <!-- FontAwesome for matching sidebar icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+    <style>
+        :root {
+            --bg-deep: #050814;
+            --bg-card: #0b0f19;
+            --bg-sidebar: #020617;
+            --border-color: #1f2937;
+            --text-primary: #f3f4f6;
+            --text-muted: #9ca3af;
+            --cyan-glow: #00ff99;
+            --alert-red: #ff3366;
+            --warning-amber: #facc15;
+            --info-blue: #38bdf8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ==========================================
+           SIDEBAR STYLING (MATCHES SCREENSHOT)
+           ========================================== */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            flex-shrink: 0;
+            overflow-y: auto;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--cyan-glow);
+            margin-bottom: 30px;
+        }
+
+        .nav-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 25px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background-color: rgba(0, 255, 153, 0.08);
+            color: var(--cyan-glow);
+        }
+
+        .infra-section {
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+
+        .infra-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .infra-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--cyan-glow);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--cyan-glow);
+        }
+
+        /* ==========================================
+           MAIN CONTENT CANVAS STYLING
+           ========================================== */
+        .main-canvas {
+            flex-grow: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .canvas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .header-left h1 {
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .header-left p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            background: var(--bg-card);
+            padding: 8px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+        }
+
+        /* Telemetry Sensor Dashboard Grid */
+        .telemetry-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .widget-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .widget-card .title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .widget-card .value {
+            font-size: 24px;
+            font-weight: 700;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* Dynamic Colors for Sensor Elements */
+        .text-cyan {
+            color: var(--cyan-glow);
+        }
+
+        .text-red {
+            color: var(--alert-red);
+        }
+
+        .text-amber {
+            color: var(--warning-amber);
+        }
+
+        .text-blue {
+            color: var(--info-blue);
+        }
+
+        /* Mid-Section Grid Containers */
+        .mid-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            height: 320px;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Mock Chart Canvas */
+        .chart-wrapper {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            border: 1px dashed var(--border-color);
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .mock-wave {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            letter-spacing: 2px;
+            color: var(--info-blue);
+            animation: twitch 2s infinite ease-in-out;
+        }
+
+        @keyframes twitch {
+
+            0%,
+            100% {
+                transform: scaleY(1);
+            }
+
+            50% {
+                transform: scaleY(1.3);
+                color: var(--cyan-glow);
+            }
+        }
+
+        /* Activity Audit Feed Component Layout */
+        .log-feed {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-right: 5px;
+        }
+
+        .log-entry {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Bottom Section: Full-Width Event Timeline Ledger */
+        .timeline-panel {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 18px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 250px;
+        }
+
+        .table-wrapper {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        th,
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.05em;
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- LEFT SIDEBAR: EXACT MATCH TO SCREENSHOT PATTERNS -->
+    <div class="sidebar">
+        <div class="logo-area">
+            <i class="fa-solid fa-shield-halved"></i> CyberForge
+        </div>
+
+        <nav class="nav-group">
+            <a href="/dashboard" class="nav-item active"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+            <a href="/hacker" class="nav-item"><i class="fa-solid fa-terminal"></i> Hacker Interface</a>
+            <a href="/victim" class="nav-item"><i class="fa-solid fa-desktop"></i> Victim Interface</a>
+            <a href="/labs/defensive" class="nav-item"><i class="fa-solid fa-flask"></i> Threat Lab Center</a>
+            <a href="/packet_sniffer" class="nav-item"><i class="fa-solid fa-network-wired"></i> Packet Sniffer</a>
+            <a href="/password_analyzer" class="nav-item"><i class="fa-solid fa-key"></i> Password Analyzer</a>
+            <a href="/ai_copilot" class="nav-item"><i class="fa-solid fa-robot"></i> AI Cyber Copilot</a>
+            <a href="/academy" class="nav-item"><i class="fa-solid fa-graduation-cap"></i> Cyber Defense Academy</a>
+            <a href="/report" class="nav-item"><i class="fa-solid fa-file-pdf"></i> Generate Report</a>
+            <a href="/awareness" class="nav-item"><i class="fa-solid fa-graduation-cap"></i> Cyber Safety Awareness</a>
+            <a href="/scenario_engine" class="nav-item"><i class="fa-solid fa-gamepad"></i> Scenario Engine</a>
+            <a href="/gamification" class="nav-item"><i class="fa-solid fa-trophy"></i> Gamification</a>
+            <a href="/siem_center" class="nav-item"><i class="fa-solid fa-server"></i> SIEM Center</a>
+            <a href="/ai_mentor" class="nav-item"><i class="fa-solid fa-graduation-cap"></i> AI Mentor Mode</a>
+            <a href="/report_center" class="nav-item"><i class="fa-solid fa-folder-open"></i> Report Center</a>
+            <a href="/logout" class="nav-item"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </nav>
+
+        <div class="infra-section">
+            <div class="infra-title">Infrastructure</div>
+            <div class="infra-item">
+                <div class="status-dot"></div> Kali Linux
+            </div>
+            <div class="infra-item">
+                <div class="status-dot"></div> Metasploitable
+            </div>
+            <div class="infra-item">
+                <div class="status-dot"></div> Flask Server
+            </div>
+            <div class="infra-item">
+                <div class="status-dot"></div> SQLite Database
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CANVA OVERVIEW MANAGEMENT SPACE -->
+    <div class="main-canvas">
+        <div class="canvas-header">
+            <div class="header-left">
+                <h1>Welcome, {{ username }}</h1>
+                <p>CyberForge Security Operations Center Dashboard Control Panel</p>
+            </div>
+            <div class="header-right">
+                System Status <span class="text-cyan" style="font-weight:bold; margin-left: 5px;">● ONLINE</span>
+            </div>
+        </div>
+
+        <!-- TELEMETRY SENSORS WIDGET MATRIX ROWS -->
+        <div class="telemetry-grid">
+            <div class="widget-card">
+                <span class="title">Security Health Index</span>
+                <span class="value text-cyan" id="metric-score">{{ security_score }}%</span>
+            </div>
+            <div class="widget-card">
+                <span class="title">Threat Incident Status</span>
+                <span class="value {% if threat_level != 'LOW' %}text-red{% else %}text-cyan{% endif %}"
+                    id="metric-threat">{{ threat_level }}</span>
+            </div>
+            <div class="widget-card">
+                <span class="title">Active Database Logs</span>
+                <span class="value text-amber" id="metric-logs">{{ total_logs }}</span>
+            </div>
+            <div class="widget-card">
+                <span class="title">Packets Captured Tracking</span>
+                <span class="value text-blue" id="metric-packets">{{ packet_count }}</span>
+            </div>
+        </div>
+
+        <!-- MID GRID PANELS: SIGNAL CHART & SCOPING RECENT LOGS -->
+        <div class="mid-grid">
+            <div class="panel">
+                <div class="panel-title"><i class="fa-solid fa-wave-square"></i> Live Network Traffic Stream</div>
+                <div class="chart-wrapper">
+                    <div class="mock-wave">_/\_/\__/\_/\_/\___/\_/\_</div>
+                    <div style="font-size:11px; color:var(--text-muted); font-family:monospace;" id="traffic-desc">
+                        Monitoring telemetry interface loops...
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title"><i class="fa-solid fa-bell"></i> Live Operator Activity Logs Feed</div>
+                <div class="log-feed" id="live-feed-box">
+                    {% for log in logs %}
+                    <div class="log-entry">
+                        <span style="color:var(--cyan-glow);">[+] {{ log.activity }}</span>
+                        <span style="color:var(--text-muted); font-size:10px;">{{ log.timestamp.split(' ')[1] if ' ' in
+                            log.timestamp else log.timestamp }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- TIMELINE LEDGER: DENSE SYSTEM EVENT METRIC MATRIX -->
+        <div class="timeline-panel">
+            <div class="panel-title"><i class="fa-solid fa-clock-rotate-left"></i> Comprehensive Global Incident
+                Timeline Audit</div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Identified Operator Node</th>
+                            <th>Incident Activity Mapping Description</th>
+                            <th>Telemetry Logged Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timeline-rows">
+                        {% for record in timeline %}
+                        <tr>
+                            <td style="color: var(--info-blue); font-weight: bold;">{{ record.username }}</td>
+                            <td>{{ record.activity }}</td>
+                            <td style="color: var(--text-muted); font-family: monospace;">{{ record.timestamp }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- POLLING ENGINE SCRIPT FOR LIVE STAT COUNTER INCREMENTS -->
+    <script>
+        async function fetchLiveTelemetryUpdate() {
+            try {
+                const response = await fetch('/api/dashboard_stats');
+                const data = await response.json();
+
+                if (data && data.security_score !== undefined) {
+                    // Smoothly refresh stats dynamically without losing the view template structure
+                    document.getElementById('metric-score').innerText = data.security_score + '%';
+                    document.getElementById('metric-logs').innerText = data.logs;
+                    document.getElementById('metric-packets').innerText = data.packets;
+
+                    const threatEl = document.getElementById('metric-threat');
+                    threatEl.innerText = data.threat_level;
+                    if (data.threat_level !== 'LOW') {
+                        threatEl.className = 'value text-red';
+                    } else {
+                        threatEl.className = 'value text-cyan';
+                    }
+                    document.getElementById('traffic-desc').innerText = `Active Session Traffic Vol: ${data.packets} packets intercepted.`;
+                }
+            } catch (err) {
+                console.log("Telemetry links waiting for loop update...");
+            }
+        }
+
+        async function fetchLiveLogsUpdate() {
+            try {
+                const response = await fetch('/api/recent_logs');
+                const data = await response.json();
+
+                if (data && data.length > 0) {
+                    const feedBox = document.getElementById('live-feed-box');
+                    const timelineRows = document.getElementById('timeline-rows');
+
+                    // Render the internal recent panel loop elements
+                    feedBox.innerHTML = data.slice(0, 5).map(log => `
+                        <div class="log-entry">
+                            <span style="color:var(--cyan-glow);">[+] ${log.activity}</span>
+                            <span style="color:var(--text-muted); font-size:10px;">${log.timestamp.includes(' ') ? log.timestamp.split(' ')[1] : log.timestamp}</span>
+                        </div>
+                    `).join('');
+
+                    // Render the global layout metrics block tracking chart
+                    timelineRows.innerHTML = data.map(log => `
+                        <tr>
+                            <td style="color: var(--info-blue); font-weight: bold;">${log.username}</td>
+                            <td>${log.activity}</td>
+                            <td style="color: var(--text-muted); font-family: monospace;">${log.timestamp}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (e) { }
+        }
+
+        // Keep metrics and log tables tracking synchronously every 3 seconds
+        setInterval(fetchLiveTelemetryUpdate, 3000);
+        setInterval(fetchLiveLogsUpdate, 3000);
+    </script>
+</body>
+
+</html>
