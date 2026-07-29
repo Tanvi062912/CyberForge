@@ -1891,7 +1891,12 @@ def remote_kali_trigger():
 
     return jsonify({"status": "success", "node_ip": client_ip, "current_victim_state": current_lab_attack_state["active_incident"]})
 
+@app.route("/google3daaca8914d61e87.html")
+def google_site_verification():
+    return "google-site-verification: google3daaca8914d61e87.html"
+
 # ==========================================
+
 # RUN APPLICATION (VIA SOCKETIO COMPATIBILITY)
 # ==========================================
 if __name__ == "__main__":
