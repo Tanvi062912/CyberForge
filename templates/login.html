@@ -7,109 +7,91 @@
 
     <title>CyberForge | Login</title>
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-    <link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
 </head>
 
 <body class="login-body">
 
-<div class="login-container">
+    <div class="login-container">
 
-    <div class="login-left">
+        <div class="login-left">
 
-        <h1>CYBERFORGE</h1>
+            <h1>CYBERFORGE</h1>
 
-        <h3>Security Operations Center</h3>
-
-        <p>
-
-            Enterprise Cyber Range
-
-            <br>
-
-            Hacker Interface
-
-            <br>
-
-            Victim Simulation
-
-            <br>
-
-            AI Cyber Copilot
-
-            <br>
-
-            Threat Lab Center
-
-        </p>
-
-    </div>
-
-    <div class="login-right">
-
-        <div class="login-card">
-
-            <h2>
-
-                <i class="fa-solid fa-user-secret"></i>
-
-                Operator Login
-
-            </h2>
-
-            <form action="/login_user" method="POST">
-
-                <input
-
-                    type="email"
-
-                    name="email"
-
-                    placeholder="Corporate Email"
-
-                    required>
-
-                <input
-
-                    type="password"
-
-                    name="password"
-
-                    placeholder="Password"
-
-                    required>
-
-                <button type="submit">
-
-                    Login
-
-                </button>
-
-            </form>
-
-            <br>
+            <h3>Security Operations Center</h3>
 
             <p>
 
-                New Operator?
+                Enterprise Cyber Range
 
-                <a href="/register">
+                <br>
 
-                    Create Account
+                Hacker Interface
 
-                </a>
+                <br>
+
+                Victim Simulation
+
+                <br>
+
+                AI Cyber Copilot
+
+                <br>
+
+                Threat Lab Center
 
             </p>
 
         </div>
 
-    </div>
+        <div class="login-right">
 
-</div>
+            <div class="login-card">
+
+                <h2>
+
+                    <i class="fa-solid fa-user-secret"></i>
+
+                    Operator Login
+
+                </h2>
+
+                <form action="/login_user" method="POST">
+
+                    <input type="email" name="email" placeholder="Corporate Email" required>
+
+                    <input type="password" name="password" placeholder="Password" required>
+
+                    <button type="submit">
+
+                        Login
+
+                    </button>
+
+                </form>
+
+                <br>
+
+                <p>
+
+                    New Operator?
+
+                    <a href="/register">
+
+                        Create Account
+
+                    </a>
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </body>
 
