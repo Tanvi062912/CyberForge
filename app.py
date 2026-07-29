@@ -412,7 +412,7 @@ def initialize_database():
 initialize_database()
 initialize_addon_database()
 
-VICTIM_STORAGE = os.path.join("database", "victim_storage")
+VICTIM_STORAGE = "/tmp/victim_storage" if os.environ.get("VERCEL") else os.path.join("database", "victim_storage")
 
 def init_victim_storage(force=False):
     os.makedirs(VICTIM_STORAGE, exist_ok=True)
@@ -449,19 +449,26 @@ def init_victim_storage(force=False):
         )
     }
     
-    if force or not os.listdir(VICTIM_STORAGE):
-        # Clear existing
-        for f in os.listdir(VICTIM_STORAGE):
+    try:
+        existing = os.listdir(VICTIM_STORAGE)
+    except Exception:
+        existing = []
+        
+    if force or not existing:
+        for f in existing:
             try:
                 os.remove(os.path.join(VICTIM_STORAGE, f))
             except Exception:
                 pass
-        # Write default files
         for name, content in files.items():
-            with open(os.path.join(VICTIM_STORAGE, name), "w", encoding="utf-8") as f:
-                f.write(content)
+            try:
+                with open(os.path.join(VICTIM_STORAGE, name), "w", encoding="utf-8") as f:
+                    f.write(content)
+            except Exception:
+                pass
 
 init_victim_storage()
+
 
 # ==========================
 # LOGIN REQUIRED
@@ -782,10 +789,12 @@ def get_lab_files():
     if not login_required():
         return jsonify({"status": "error", "message": "Unauthorized"}), 401
     try:
+        init_victim_storage()
         files = os.listdir(VICTIM_STORAGE)
         return jsonify({"status": "success", "files": files})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
 
 @app.route("/api/lab/execute_exploit", methods=["POST"])
 def execute_lab_exploit():
