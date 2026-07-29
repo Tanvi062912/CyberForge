@@ -1,16 +1,12 @@
 import sqlite3
 import os
-
-DATABASE = "database/cyberforge.db"
-
-def get_db():
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    return conn
+from database import get_db
 
 def initialize_addon_database():
-    os.makedirs("database", exist_ok=True)
+    if not os.environ.get("VERCEL"):
+        os.makedirs("database", exist_ok=True)
     conn = get_db()
+
     cursor = conn.cursor()
 
     # ---------------- FEATURE 1: SCENARIO ENGINE TABLES ----------------

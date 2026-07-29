@@ -1,11 +1,16 @@
 import threading
 from datetime import datetime
-from scapy.all import sniff, IP, TCP, UDP, ICMP, ARP
+try:
+    from scapy.all import sniff, IP, TCP, UDP, ICMP, ARP
+    SCAPY_AVAILABLE = True
+except Exception:
+    SCAPY_AVAILABLE = False
 
 # Global volatile memory buffers tracking data link matrices
 captured_packets = []
 is_sniffing = False
 sniff_thread = None
+
 
 def scapy_packet_callback(packet):
     """Callback execution loop fired by Scapy whenever a raw network layer drops."""
@@ -80,8 +85,14 @@ def background_sniffer():
     """Continuous thread capture driver."""
     global is_sniffing
     while is_sniffing:
-        # Check buffer loop windows every 1 second to keep thread shutdown responsive
-        sniff(prn=scapy_packet_callback, count=5, timeout=1)
+        if SCAPY_AVAILABLE:
+            try:
+                sniff(prn=scapy_packet_callback, count=5, timeout=1)
+            except Exception:
+                is_sniffing = False
+        else:
+            is_sniffing = False
+
 
 # ========================================================
 # CORE SYSTEM EXPORT ROUTINES BOUND TO YOUR APP.PY

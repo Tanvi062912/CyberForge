@@ -74,11 +74,15 @@ app.register_blueprint(report_center_blueprint)
 
 set_socketio(socketio)
 
-DATABASE = "database/cyberforge.db"
-REPORT_FOLDER = "reports"
+from database import get_db_path
 
-os.makedirs("database", exist_ok=True)
+DATABASE = get_db_path()
+REPORT_FOLDER = "/tmp/reports" if os.environ.get("VERCEL") else "reports"
+
+if not os.environ.get("VERCEL"):
+    os.makedirs("database", exist_ok=True)
 os.makedirs(REPORT_FOLDER, exist_ok=True)
+
 
 # Global variables to manage the running backend shell process pipes
 shell_type = 'local'
