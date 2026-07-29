@@ -128,9 +128,13 @@ def kill_shell():
         fd = None
 
 def spawn_shell(selected_type='local', ssh_config=None):
-    global shell_process, fd, ssh_client, ssh_channel, shell_type
-    kill_shell()
-    shell_type = selected_type
+    if os.environ.get("VERCEL"):
+        return
+    try:
+        global shell_process, fd, ssh_client, ssh_channel, shell_type
+        kill_shell()
+        shell_type = selected_type
+
     
     if shell_type == 'local':
         if os.name == 'nt':
@@ -752,11 +756,14 @@ def hacker():
     if not login_required():
         return redirect("/login")
 
-    # Initialize the backend terminal process session wrapper pipeline
-    spawn_shell()
+    try:
+        spawn_shell()
+    except Exception as e:
+        print(f"Skipping spawn_shell on serverless: {e}")
     
     add_log(session["username"], "Opened Live Hacker Terminal Interface")
     return render_template("hacker.html", username=session["username"])
+
 
 @app.route("/victim")
 def victim():
