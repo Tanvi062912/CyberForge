@@ -130,10 +130,10 @@ def kill_shell():
 def spawn_shell(selected_type='local', ssh_config=None):
     if os.environ.get("VERCEL"):
         return
-    try:
-        global shell_process, fd, ssh_client, ssh_channel, shell_type
-        kill_shell()
-        shell_type = selected_type
+    global shell_process, fd, ssh_client, ssh_channel, shell_type
+    kill_shell()
+    shell_type = selected_type
+
 
     
     if shell_type == 'local':
