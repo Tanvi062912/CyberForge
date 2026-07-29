@@ -323,7 +323,9 @@ def handle_select_shell(data):
     spawn_shell(selected_type, ssh_config)
 
 # Spin up the background terminal listener stream task thread pool
-socketio.start_background_task(target=read_shell_output)
+if not os.environ.get("VERCEL"):
+    socketio.start_background_task(target=read_shell_output)
+
 
 # ==========================
 # DATABASE CONNECTION
@@ -410,11 +412,21 @@ def initialize_database():
     )
     """)
 
+    admin_email = "admin@cyberforge.com"
+    admin_pass = hash_password("admin123")
+    cursor.execute("SELECT * FROM users WHERE email=?", (admin_email,))
+    if not cursor.fetchone():
+        cursor.execute("INSERT INTO users (username, email, password) VALUES (?, ?, ?)", ("admin", admin_email, admin_pass))
+
     conn.commit()
     conn.close()
 
-initialize_database()
-initialize_addon_database()
+try:
+    initialize_database()
+    initialize_addon_database()
+except Exception as e:
+    print(f"Top-level DB init exception: {e}")
+
 
 VICTIM_STORAGE = "/tmp/victim_storage" if os.environ.get("VERCEL") else os.path.join("database", "victim_storage")
 

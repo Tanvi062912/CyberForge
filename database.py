@@ -14,11 +14,23 @@ def get_db_path():
                 os.makedirs("/tmp", exist_ok=True)
                 if os.path.exists(ORIGINAL_DB):
                     shutil.copyfile(ORIGINAL_DB, TMP_DB)
+                else:
+                    alt_path = os.path.join(os.getcwd(), "database", "cyberforge.db")
+                    if os.path.exists(alt_path):
+                        shutil.copyfile(alt_path, TMP_DB)
+                    else:
+                        conn = sqlite3.connect(TMP_DB)
+                        conn.close()
             except Exception as e:
-                print(f"Error copying DB to /tmp: {e}")
-        if os.path.exists(TMP_DB):
-            return TMP_DB
+                print(f"Error initializing DB in /tmp: {e}")
+                try:
+                    conn = sqlite3.connect(TMP_DB)
+                    conn.close()
+                except Exception:
+                    pass
+        return TMP_DB
     return ORIGINAL_DB
+
 
 
 def get_db():
